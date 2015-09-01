@@ -37,7 +37,7 @@ proj4string(shp) <- CRS(lv03)
 plot(shp)
 
 #project to wgs84
-shp_wgs84<- spTransform(shp, CRS= wgs84)
+shp_wgs84<- spTransform(shp, CRS(wgs84))
 
 nameKML <- paste(sub("(.+)[.][^.]+$", "\\1", basename(fns[i])),'kml',sep='.');nameKML
 nameLAYER <-  paste(sub("(.+)[.][^.]+$", "\\1", basename(fns[i])),'layer',sep='_');nameLAYER
