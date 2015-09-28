@@ -1,6 +1,6 @@
 #########################################################
 #########################################################
-# Â© eRey.ch | bioGIS; erey@biogis.ch
+# © eRey.ch | bioGIS; erey@biogis.ch
 #2015.09.25
 #source('./CMR/cmr_cjs.r')
 
@@ -13,7 +13,7 @@
 # the analysis go through 3 loops:
 # 1-. through all csv files
 # 2-. through all species
-# 3-. for eaxh sex, Male and Female
+# 3-. for each sex, Male and Female
 
 # It compute 3 models:
 # a-. constant effect
@@ -59,29 +59,29 @@ result <- read.csv(text='name,sp,sex,NumbBat,avg.n,avg.se,bat.cjs.cst,bat.cjs.cs
 dim(result)
 
 
-avg.n <- NULL
-avg.se <- NULL
-bat.cjs.cst <- NULL
-bat.cjs.cst.StdErr <- NULL
-qaicc.Cst <- NULL
-roc.Cst <- NULL
-chi.cst <- NULL
-df.cst <- NULL
-pvalue.cst <- NULL
-bat.cjs.Sx <- NULL
-bat.cjs.Sx.StdErr <- NULL
-qaicc.Sx <- NULL
-roc.Sx <- NULL
-chi.Sx <- NULL
-df.Sx <- NULL
-pvalue.Sx <- NULL
-bat.cjs.SxEff <- NULL
-bat.cjs.SxEff.StdErr <- NULL
-qaicc.SxEff <- NULL
-roc.SxEff <- NULL
-chi.SxEff <- NULL
-df.SxEff <- NULL
-pvalue.SxEff <- NULL
+avg.n <- NA
+avg.se <- NA
+bat.cjs.cst <- NA
+bat.cjs.cst.StdErr <- NA
+qaicc.Cst <- NA
+roc.Cst <- NA
+chi.cst <- NA
+df.cst <- NA
+pvalue.cst <- NA
+bat.cjs.Sx <- NA
+bat.cjs.Sx.StdErr <- NA
+qaicc.Sx <- NA
+roc.Sx <- NA
+chi.Sx <- NA
+df.Sx <- NA
+pvalue.Sx <- NA
+bat.cjs.SxEff <- NA
+bat.cjs.SxEff.StdErr <- NA
+qaicc.SxEff <- NA
+roc.SxEff <- NA
+chi.SxEff <- NA
+df.SxEff <- NA
+pvalue.SxEff <- NA
 
 
 
@@ -102,7 +102,7 @@ for(csv in fns){
   cntYrs <- as.data.frame(table(unlist(str_split(listYrs,'[Xabcdef]'))));cntYrs
   
   #set effort vector
-  effort <- log(cntYrs$Freq[-1]);plot(effort)
+  effort <- log(cntYrs$Freq[-1]);plot(effort,main=paste('capture effort at:', csv,sep=' '))
   
   #set intervall between capture (==years)
   yrs <- as.numeric(as.vector(cntYrs$Var1[-1]));yrs
@@ -127,7 +127,7 @@ for(csv in fns){
   #subset the data of the given species
   print('2-. Loop 2, Select each species')
   for(sp in listSp){
-    # sp <- listSp[4]
+    # sp <- listSp[9]
     print(sp)
     genreName <- strsplit(sp,split=' ')[[1]][1]
     spName <- strsplit(sp,split=' ')[[1]][2]
@@ -139,7 +139,7 @@ for(csv in fns){
     if(dim(batSp)[1]>1){
     
     print(unique(batSp$sp));print(dim(batSp))
-
+    
     print(paste('building matrix for cmr analysis for',csv,sp,sep=' '))
     
     #limit the dataset to the capture-recapture events
@@ -157,8 +157,8 @@ for(csv in fns){
     if(!csv=='baume_barree.csv'){
       bat<-as.matrix(batSp[,yrBegin:yrEnd]);bat
     }
-
- 
+    
+    
     ##################################
     #Compute sex, effort and time matrix
     nan <- dim(bat)[1];print(nan)
@@ -167,7 +167,7 @@ for(csv in fns){
     print('effort matrix')
     attr(effort,'nan') <- nan
     attr(effort,'drop.levels') <- ns
-
+    
     effortvar <- tvar(effort)
     
     #time as tvar
@@ -175,12 +175,12 @@ for(csv in fns){
     timevarcap <-  tvar(as.factor(1:ncol(bat)),nrow(bat),c(1,2))
     timevarsurv <-  tvar(as.factor(1:ncol(bat)),nrow(bat),c(1,ns))
     
-
+    
     # sex effect as ivar
     print('sex matrix')
     batSx <- batSp$sex
     print(dim(bat))
-
+    
     attr(batSx,'ns') <- ns
     
     ####################################################################  
@@ -188,22 +188,22 @@ for(csv in fns){
     print('3-. Loop 3, Select all, males and females for cjs cmr models')
     drp <- c('Male','Female')
     Sx <- c('M','F')
-
+    
     for(i in 1:length(drp)){
       # i <- 1
       mf <- drp[i]
       print(mf)
       nan <- dim(subset(dtf,species==sp & sex==Sx[i]))[1]
-
+      
       modelling <- paste('compute Cormak-Jolly-Seber Model for',csv,sp,mf,sep=' ')
       print(modelling)
       
-            
+      
       ##################################
       #Cormak-Jolly-Seber Model for open populations
       ## Method 2 : same thing using 2-d matrices
       xy <- F.cjs.covars( nrow(bat), ncol(bat));dim(bat)
-
+      
       # The following extracts 2-D matrices of 0s and 1s
       for(j in 1:ncol(bat)){ assign(paste("x",j,sep=""), xy$x[,,j]) }
       
@@ -216,8 +216,8 @@ for(csv in fns){
       
       #test model
       testModel <- try(F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
-      if(!class(testModel)=='try_error'){
-      	
+      if(!class(testModel)[1]=='try_error'){
+      
         #check validity and presence of effect and survival matrix, then compute modelling
         if(any(ls()=='timevarsurv')){
           bat.cjs.cst.model <- F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.cst.model)
@@ -250,15 +250,16 @@ for(csv in fns){
         if(length(unique(batSx))>1){
           sexvar <- ivar(batSx,ns,drop=i)
           
-        #test model
-        testModel <- try(F.cjs.estim( capture=~-1+sexvar, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
-        if(!class(testModel)=='try_error'){
-          
-          #check validity and presence of effect and survival matrix, then compute modelling
-          if(any(ls()=='timevarsurv') & any(ls()=='sexvar')){
-            bat.cjs.Sx.model <- F.cjs.estim( capture=~-1+sexvar, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.Sx.model)
-            print(bat.cjs.Sx.model$message)
-
+           #test model
+           testModel <- try(F.cjs.estim( capture=~-1+sexvar, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
+           if(!class(testModel)[1]=='try_error'){
+           
+           #check validity and presence of effect and survival matrix, then compute modelling
+           
+           if(any(ls()=='timevarsurv') & any(ls()=='sexvar')){
+           bat.cjs.Sx.model <- F.cjs.estim( capture=~-1+sexvar, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.Sx.model)
+           print(bat.cjs.Sx.model$message)
+            
             if(!median(bat.cjs.Sx.model$n.hat,na.rm=T)==0){
               cjs.test.Sx.model <- F.cjs.gof(bat.cjs.Sx.model);print(cjs.test.Sx.model)
               bat.cjs.Sx<- median(bat.cjs.Sx.model$n.hat,na.rm=T)
@@ -275,17 +276,16 @@ for(csv in fns){
           #close condition try tes modelling
         }
         
-
-      
+        
         ##################################
         #Sex and Effort Model
         print('##############################################################')
         print('##############################################################')
         print('model with capture effort and sex effect')
-
+        
         #test model
         testModel <- try(F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
-        if(!class(testModel)=='try_error'){
+        if(!class(testModel)[1]=='try_error'){
           
           #check validity and presence of effect and survival matrix, then compute modelling
           if(any(ls()=='timevarsurv') & any(ls()=='sexvar') & any(ls()=='effortvar')){
@@ -311,7 +311,6 @@ for(csv in fns){
         #close sexvar loop
         }
       rm(sexvar)
-
       
       ##################################
       #weighted average model
@@ -320,9 +319,8 @@ for(csv in fns){
                      'bat.cjs.Sx.model',
                      'bat.cjs.SxEff.model')
       
-
       avg.Test <- try(F.cr.model.avg(fits=modelList,what="n", fit.stat="qaicc" ))
-      if(!class(avg.Test)=='try_error'){
+      if(!class(avg.Test)[1]=='try_error'){
         mod.avg.n <- F.cr.model.avg(fits=modelList,what="n", fit.stat="qaicc" )
         print(mod.avg.n)
         avg.n <- median(mod.avg.n$n.hat,na.rm=T)
@@ -333,14 +331,12 @@ for(csv in fns){
         minYLim <- 0
         pdfName <- paste(paste(name,genreName,spName,mf,'avg',sep='_'),'pdf',sep='.')
         pdf(pdfName,paper='a4r',width=11,height=8.5)
-        plot(mod.avg.n,ylim=c(minYLim,maxLim),main = paste('model average on qaicc for:',name,sp,mf,sep=' '))
+        plot(mod.avg.n,ylim=c(minYLim,maxYLim),main = paste('model average on qaicc for:',name,sp,mf,sep=' '))
         dev.off()
         #close condition average model
         }
       
-
       
-
       ##################################
       #Result data frame
       
@@ -371,41 +367,36 @@ for(csv in fns){
                         chi.SxEff,
                         df.SxEff,
                         pvalue.SxEff)
-
+      
       print('')
       print('add model results to result data frame')
       result <- rbind(result,cjs)
       # print(summary(result))
       print(paste('nrow result: ',dim(result)[1],sep=' '))
-
       
-
       
       ##################################
       #Plot models
       
-      plotTest <- try(plot(bat.cjs.cst.model),silent=T)
-      if(!class(plotTest)=='try-error'){
+      if(!class(try(plot(bat.cjs.cst.model),silent=T))=='try-error'){
         pdfName <- paste(paste(name,genreName,spName,mf,'cste',sep='_'),'pdf',sep='.')
         pdf(pdfName,paper='a4r',width=11,height=8.5)
-        plot(bat.cjs.cst.model,main=paste(name,sp, mf, 'constant effect',sep='; '),cex.axis=0.8)
+        plot(bat.cjs.cst.model,ylim=c(minYLim,maxYLim),main=paste(name,sp, mf, 'constant effect',sep='; '),cex.axis=0.8)
         dev.off()
         #close condition plot cst model
         }
-      plotTest <- try(plot(bat.cjs.Sx.model),silent=T)
-      if(!class(plotTest)=='try-error'){
+      if(!class(try(plot(bat.cjs.Sx.model),silent=T))=='try-error'){
         pdfName <- paste(paste(name,genreName,spName,mf,'Sex',sep='_'),'pdf',sep='.')
         pdf(pdfName,paper='a4r',width=11,height=8.5)
-        plot(bat.cjs.Sx.model,main=paste(name,sp, mf, 'Sex effect',sep='; '),cex.axis=0.8)
+        plot(bat.cjs.Sx.model,ylim=c(minYLim,maxYLim),main=paste(name,sp, mf, 'Sex effect',sep='; '),cex.axis=0.8)
         dev.off()
         #close condition plot Sex model
         }
       
-      plotTest <- try(plot(bat.cjs.SxEff.model),silent=T)
-      if(!class(plotTest)=='try-error'){
+      if(!class(try(plot(bat.cjs.SxEff.model),silent=T))=='try-error'){
         pdfName <- paste(paste(name,genreName,spName,mf,'SexEff',sep='_'),'pdf',sep='.')
         pdf(pdfName,paper='a4r',width=11,height=8.5)
-        plot(bat.cjs.SxEff.model,main=paste(name,sp, mf, 'Sex & Effort effect',sep='; '),cex.axis=0.8)
+        plot(bat.cjs.SxEff.model,ylim=c(minYLim,maxYLim),main=paste(name,sp, mf, 'Sex & Effort effect',sep='; '),cex.axis=0.8)
         dev.off()
         #close condition plot SexEff model
       }
