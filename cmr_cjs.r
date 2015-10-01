@@ -1,8 +1,11 @@
 #########################################################
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
-#2015.09.25
-#source('./CMR/cmr_cjs.r')
+# created on 2015.09.25
+# modified on 2015.10.01
+# source('./CMR/cmr_cjs.r')
+# source('/Volumes/Data/PhD/R/CMR/cmr_cjs.r')
+# https://github.com/biogis/r/blob/master/cmr_cjs.r
 
 # Set your working directory as a directory with all your cmr csv files with, minimal and in the following order:
 # all capture at x occasion, named as 2000a, 2000b, ...
@@ -45,18 +48,22 @@ for(pkg in packages){print(pkg)
 
 ################################################
 #set your working directory
-setwd('d:/CMR')
+#setwd('d:/CMR')
 #setwd('/Volumes/Bat/CMR')
-# setwd('/Volumes/Data/PhD/R/CMR')
+setwd('/Volumes/Data/PhD/R/CMR')
 
 
 #list all csv files
 fn <- file.path(getwd())
 fns <- list.files(fn,pattern='.csv');print(fns)
 
+fns <- c('baume_barree.csv','Cernil_Ladame.csv','Grand_murin.csv','La_Baume.csv','Mines_craie.csv','Pertuis.csv')
+
 #prepare empty data frame to receive all results
 result <- read.csv(text='name,sp,sex,NumbBat,avg.n,avg.se,bat.cjs.cst,bat.cjs.cst.StdErr,qaicc.cst,roc.cst,chi.cst,df.cst,pvalue.cst,bat.cjs.Sx,bat.cjs.Sx.StdErr,qaicc.Sx,roc.Sx,chi.Sx,df.Sx,pvalue.Sx,bat.cjs.SxEff,bat.cjs.SxEff.StdErr,qaicc.SxEff,roc.SxEff,chi.SxEff,df.SxEff,pvalue.SxEff')
 dim(result)
+
+resum <- read.csv(text='ID,model.num,model.name,converged,n.est.parameters,n.coefficients,loglike,aicc,delta.aicc,aicc.wgt,qaicc,delta.qaicc,qaicc.wgt,plausible')
 
 
 avg.n <- NA
@@ -116,6 +123,7 @@ for(csv in fns){
     int <- c(int,diff)
   }
   int <- int[-(which(is.na(int)))]
+  print(int)
   
   
   ####################################################################
@@ -127,7 +135,7 @@ for(csv in fns){
   #subset the data of the given species
   print('2-. Loop 2, Select each species')
   for(sp in listSp){
-    # sp <- listSp[9]
+    # sp <- listSp[1]
     print(sp)
     genreName <- strsplit(sp,split=' ')[[1]][1]
     spName <- strsplit(sp,split=' ')[[1]][2]
@@ -215,12 +223,12 @@ for(csv in fns){
         print('model with constant effect')
         
         #test model
-        testModel <- try(F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
+        testModel <- try(F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex),silent=T)
         if(!class(testModel)[1]=='try_error'){
           
           #check validity and presence of effect and survival matrix, then compute modelling
           if(any(ls()=='timevarsurv')){
-            bat.cjs.cst.model <- F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.cst.model)
+            bat.cjs.cst.model <- F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex);print(bat.cjs.cst.model)
             print(bat.cjs.cst.model$message)
             
             #save median values of model and goodness of fit
@@ -273,7 +281,7 @@ for(csv in fns){
               }
               #close condition modelling cjs
             }
-            #close condition try tes modelling
+            #close condition try test modelling
           }
           
           
@@ -284,12 +292,12 @@ for(csv in fns){
           print('model with capture effort and sex effect')
           
           #test model
-          testModel <- try(F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
+          testModel <- try(F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex),silent=T)
           if(!class(testModel)[1]=='try_error'){
             
             #check validity and presence of effect and survival matrix, then compute modelling
             if(any(ls()=='timevarsurv') & any(ls()=='sexvar') & any(ls()=='effortvar')){
-              bat.cjs.SxEff.model <- F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.SxEff.model)
+              bat.cjs.SxEff.model <- F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex);print(bat.cjs.SxEff.model)
               print(bat.cjs.SxEff.model$message)
               
               #save median values of model and goodness of fit
@@ -319,27 +327,32 @@ for(csv in fns){
           
           modelSummary <- F.fit.table(fits=modelList, rank.by= "qaicc", plausible.p=0.01)
           print(modelSummary)
-          summaryName <- paste(paste(name,genreName,spName,mf,'Summary',sep='_'),'csv',sep='.')
-          write.csv(modelSummary,summaryName)
+#          summaryName <- paste(paste(name,genreName,spName,mf,'Summary',sep='_'),'csv',sep='.')
+#          write.csv(modelSummary,summaryName)
+          ID <- paste(name,genreName,spName,mf,sep='_');ID
+          modelSummary$ID <- ID
+          resum <- rbind(resum,modelSummary)
           
           if(!any(modelSummary$converged==FALSE)){
-          mod.avg.n <- F.cr.model.avg(fits=modelList,what="n.hat", fit.stat="qaicc" )
-          print(mod.avg.n)
-          avg.n <- median(mod.avg.n$n.hat,na.rm=T)
-          avg.se <- median(mod.avg.n$se.n.hat,na.rm=T)
-          avgList <- c(avg.n,avg.se)
-          if(!any(is.na(avgList))){
-            ## Plot
-            maxYLim <- max(mod.avg.n$n.hat,na.rm=T)+max(mod.avg.n$se.n.hat,na.rm=T)
-            minYLim <- 0
-            pdfName <- paste(paste(name,genreName,spName,mf,'avg',sep='_'),'pdf',sep='.')
-            pdf(pdfName,paper='a4r',width=11,height=8.5)
-            plot(mod.avg.n,ylim=c(minYLim,maxYLim),main = paste('model average on qaicc for:',name,sp,mf,sep=' '))
-            dev.off()
-            #close condition plot average
-            }
-          #close average model condition
-          }
+          	plausibleIndex <- which(modelSummary$plausible==T);plausibleIndex
+          	modelList <- modelSummary$model.name[plausibleIndex];modelList
+          	mod.avg.n <- F.cr.model.avg(fits=modelList,what="n.hat", fit.stat="qaicc" )
+          	print(mod.avg.n)
+          	avg.n <- median(mod.avg.n$n.hat,na.rm=T)
+          	avg.se <- median(mod.avg.n$se.n.hat,na.rm=T)
+          	avgList <- c(avg.n,avg.se);print(avgList)
+          	if(!any(is.na(avgList))){
+          		## Plot
+          		maxYLim <- max(mod.avg.n$n.hat,na.rm=T)+max(mod.avg.n$se.n.hat,na.rm=T)
+          		minYLim <- 0
+          		pdfName <- paste(paste(name,genreName,spName,mf,'avg',sep='_'),'pdf',sep='.')
+          		pdf(pdfName,paper='a4r',width=11,height=8.5)
+          		plot(mod.avg.n,ylim=c(minYLim,maxYLim),main = paste('model average on qaicc for:',name,sp,mf,sep=' '))
+          		dev.off()
+          		#close condition plot average
+          		}
+          		#close average model condition
+          		}
 
                   
         
@@ -423,10 +436,7 @@ for(csv in fns){
 
 
 write.csv(result,'result.cjs.csv',row.names=F)
+write.csv(resum,'model.summary.cjs.csv',row.names=F)
 
 
 print('done, go drink a coffee')
-
-
-
-
