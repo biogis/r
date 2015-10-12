@@ -20,7 +20,7 @@ try(.libPaths("//eaw-homedirs/reyemman$/My Documents/R/win-library/3.2"),silent=
 
 packages <- c(
   #stat libraries
-  'lattice','ade4','permute','reshape','zoo','miscTools',
+  'lattice','ade4','permute','reshape','zoo','miscTools','mra','Rcapture',
   #'readxl','vegan',
   
   #Spatial libraries
@@ -39,13 +39,13 @@ packages <- c(
   'foreach','iterators','parallel','doParallel',
   
   #graphics libraries
-  'TeachingDemos','soiltexture','hexbin','corrgram','diagram',
+  'TeachingDemos','hexbin','corrgram','diagram',
   'rasterVis','latticeExtra','beanplot','vioplot','ggplot2','chron',
   'grid','GGally','RColorBrewer','classInt','extrafont','scatterplot3d',
-  #  'rgl',
+ # 'shiny','rgl','soiltexture',
   
   #R libraries
-  'RCurl','devtools','base64enc'#,'installr'
+  'XML','RCurl','devtools','base64enc'#,'installr'
 )
 
 
