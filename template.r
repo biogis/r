@@ -14,8 +14,8 @@ proj <- '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +
 
 ## Set library path
 try(.libPaths("//eaw-homedirs/reyemman$/My Documents/R/win-library/3.2"),silent=T)
-# try(.libPaths("C:/Program Files/R/R-3.2.2/library"),silent=T)
-# try(.libPaths('//giubserv01/hydro/userdata/erey/Documents/R/win-library/3.2'),silent=T)
+try(.libPaths("C:/Program Files/R/R-3.2.2/library"),silent=T)
+try(.libPaths('//giubserv01/hydro/userdata/erey/Documents/R/win-library/3.2'),silent=T)
 
 
 packages <- c(
