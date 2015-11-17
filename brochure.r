@@ -5,8 +5,48 @@ setwd('C:/Users/reyemman/Dropbox')
 
 dtf <- read.csv('FRIbat_db_20151110.csv',header=T,sep=',')
 names(dtf)
+dim(dtf)
 head(dtf)
 summary(dtf)
+
+
+index <- which(dtf$obs=='DAUD' | dtf$obs=='DBOX' | dtf$obs=='DCHA' | dtf$obs=='DCVU' | 
+                 dtf$obs=='DUEXP' | dtf$obs=='DUFQ' | dtf$obs=='DUHET')
+ac <- dtf[index,]
+ac$obs.rcl <- '1-.Acoustique'
+head(ac)
+
+index <- which(dtf$obs=='DCAP')
+cap <- dtf[index,]
+cap$obs.rcl <- '2-.Captures'
+head(cap)
+
+index <- which(dtf$obs=='DCOL' | dtf$obs=='RCRO' | dtf$obs=='TNOU')
+gite <- dtf[index,]
+gite$obs.rcl <- '3-.Gîtes'
+head(gite)
+
+index <- which(dtf$obs=='RCAD' | dtf$obs=='RCECR' | dtf$obs=='RCRA' | dtf$obs=='ROSS' | 
+                 dtf$obs=='RPOI')
+musee <- dtf[index,]
+musee$obs.rcl <- '4-.Museum'
+head(musee)
+
+index <- which(dtf$obs=='DGENE' | dtf$obs=='DJUM' | dtf$obs=='DPHO' | dtf$obs=='DTEL' | 
+                 dtf$obs=='DVID' | dtf$obs=='DVUE' | dtf$obs=='TPRE')
+autre <- dtf[index,]
+autre$obs.rcl <- '5-.Autre'
+head(autre)
+
+
+index <- which(is.na(dtf$obs) | dtf$obs==unique(dtf$obs)[7])
+naDATA <- dtf[index,]
+naDATA$obs.rcl <- NA
+head(naDATA)
+
+dtf <- rbind(ac,cap,gite,musee,autre,naDATA)
+names(dtf)
+dim(dtf)
 
 # dtf <- read.csv('FRIbat_db_20151110.csv',header=T,sep=';')
 # names(dtf)
@@ -200,8 +240,8 @@ for(sp in listSp){
   shp
   
   pdf(pdfName,family='AKKURAT',paper='a4r',width=11,height=8.5)
-  pdf('rplot.pdf',paper='a4r',width=11,height=8.5)
-  
+  pdf('testrplot.pdf',paper='a4r',width=11,height=8.5)
+
   plot(dem,col=grey(0:255 / 255),ext=extent,alpha=0.6,xlab='Coord X', ylab='Coord Y',legend=F,main=sp)
   plot(dem.fr,add=T,col=BrBG(255),alpha=0.6,legend=F)
   plot(river,add=T,col='royalblue4')
@@ -252,8 +292,8 @@ for(sp in listSp){
               'Données la plus récente:',lastData,sep=' '),
         side=3, line=1,col='grey10')
   
-  h5 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=5)
-  abline(h=h5,lty=2,lwd=0.5)
+#   h5 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=5)
+#   abline(h=h5,lty=6,lwd=0.5)
   h2 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=2)
   abline(h=h2,lty=2,lwd=0.5)
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
@@ -332,9 +372,11 @@ for(sp in listSp){
   #######
   #Type obs
   #######
-  obs <- table(batSp$obs,useNA='always')
-  #   obs <- floor(obs/sum(obs)*100)
+  obs <- table(batSp$obs.rcl,useNA='always')
+  propOBS <- floor(obs/sum(obs)*100)
+  OBSName <- paste(obs,paste(propOBS,'%',sep=' '),sep='-|-');OBSName
   plot(obs,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
+  text(obs+2, labels = OBSName,col='grey20',cex=0.8)
   rownames <- as.factor(as.data.frame(obs)$Var1)
   
   mtext("Nbre d'observation", side=2, line=3,cex=1,col="grey30")
@@ -350,14 +392,35 @@ for(sp in listSp){
   # pie(propobs, clockwise=T,col=jet.colors(length(typCOL)),label=names(obs),cex=0.6)
   # mtext("Type d'observations", side=3, line=1,cex=1.2,col="grey30")
   
+  #######
+  #Type Year vs. obs
+  #######
+  Y.obs <- table(batSp$A,batSp$obs.rcl,useNA='always')
+  plot(Y.obs,col=c('tomato','steelblue','red4','gold','limegreen','turquoise3'),
+       las=2,cex=0.8,main="Types d'observations par année")
+  legend('topleft', horiz=F,bg='white',box.col='white',ncol=1, cex=1, 
+         legend=c('Acoustique','Captures','Gites','Museum','Autres','NA'), pch=c(16,16,16,16,16), 
+         col=c('tomato','steelblue','red4','gold','limegreen','turquoise3'))
+
+  # mtext("Fréquences d'observations", side=2, line=3,cex=1,col="grey30")
+  # box(col="grey")
+  
+  # axis(2,cex.axis=1,col.axis='grey30',col='grey30')
+  # mtext(sp,side=3, line=3,col='grey10')
+  
+  
   
   #######
   #Type colonies
   #######
   
   typCOL <- table(batSp$TYP_COL,useNA='always')
-  #   typCOL <- floor(typCOL/sum(typCOL)*100)
+  propCOL <- floor(typCOL/sum(typCOL)*100)
+  TYPName <- paste(typCOL,paste(propCOL,'%',sep=' '),sep='-|-');TYPName
+  
   plot(typCOL,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
+  text(typCOL+4, labels = TYPName,col='grey20',cex=0.8)
+  
   rownames <- as.factor(as.data.frame(typCOL)$Var1)
   
   mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
@@ -380,8 +443,12 @@ for(sp in listSp){
   #######
   
   lause <- table(batSp$LaUse,useNA='always')
-  #   lause <- floor(lause/sum(lause)*100)
+  proplause <- floor(lause/sum(lause)*100)
+  lulcName <- paste(lause,paste(proplause,'%',sep=' '),sep='-|-');lulcName
+  
   plot(lause,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
+  text(lause+2, labels = lulcName,col='grey20',cex=0.8)
+  
   rownames <- as.factor(as.data.frame(lause)$Var1)
   
   mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
