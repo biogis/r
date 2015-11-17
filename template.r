@@ -14,8 +14,8 @@ proj <- '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +
 
 ## Set library path
 try(.libPaths("//eaw-homedirs/reyemman$/My Documents/R/win-library/3.2"),silent=T)
-try(.libPaths("C:/Program Files/R/R-3.2.2/library"),silent=T)
-try(.libPaths('//giubserv01/hydro/userdata/erey/Documents/R/win-library/3.2'),silent=T)
+# try(.libPaths("C:/Program Files/R/R-3.2.2/library"),silent=T)
+# try(.libPaths('//giubserv01/hydro/userdata/erey/Documents/R/win-library/3.2'),silent=T)
 
 
 packages <- c(
@@ -42,6 +42,7 @@ packages <- c(
   'TeachingDemos','hexbin','corrgram','diagram',
   'rasterVis','latticeExtra','beanplot','vioplot','ggplot2','chron',
   'grid','GGally','RColorBrewer','classInt','extrafont','scatterplot3d',
+  'gridExtra','showtext',
  # 'shiny','rgl','soiltexture',
   
   #R libraries
@@ -65,6 +66,8 @@ print('#Register the number of cores for parallel computation')
 registerDoParallel(cores=7)
 # print('#Load fonts')
 loadfonts(device="pdf")
+font.add('Akkurat','AKKURAT.ttf')
+
 
 print('Use font from the OS, list all fonts: fonttable()')
 print('#pdf("rplot.pdf",paper="a4r",family="DINbeck",width=11,height=8.5)')
@@ -633,6 +636,9 @@ source_https <- function(url, ...) {
     eval(parse(text = getURL(u, followlocation = TRUE, cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl"))), envir = .GlobalEnv)
   })
 }
+
+
+
 
 print('data frame summary, use as: cdata <- summarySE(dtf, measurevar="Value", groupvars=c("Dataset", "Model","EvaluationMethod"), na.rm=TRUE)')
 print('moving average using zoo library, use as: rollmean(x,k) or rollmedian(x,k), x as vecor value, k as moving window')
