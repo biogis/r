@@ -2,7 +2,8 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2015.09.25
-# modified on 2015.10.01
+# modified on 2015.10.01; add model stat and weighted model average
+# modified on 2015.11.28; correction weighted average model
 # source('./CMR/cmr_cjs.r')
 # source('/Volumes/Data/PhD/R/CMR/cmr_cjs.r')
 # https://github.com/biogis/r/blob/master/cmr_cjs.r
@@ -333,8 +334,9 @@ for(csv in fns){
           modelSummary$ID <- ID
           resum <- rbind(resum,modelSummary)
           
+          #Model averaging of mark-recapture parameters.
           if(!any(modelSummary$converged==FALSE)){
-          	plausibleIndex <- which(modelSummary$plausible==T);plausibleIndex
+          	plausibleIndex <- which(modelSummary$plausible==T & modelSummary$converged==T);plausibleIndex
           	modelList <- modelSummary$model.name[plausibleIndex];modelList
           	mod.avg.n <- F.cr.model.avg(fits=modelList,what="n.hat", fit.stat="qaicc" )
           	print(mod.avg.n)
