@@ -98,7 +98,7 @@ pvalue.SxEff <- NA
 #loop through all csv files listed in fns, open each csv
 print('1-. Loop 1, opening each csv file')
 for(csv in fns){
-  # csv <- fns[6];csv
+  # csv <- fns[1];csv
   #Import csv
   dtf <- read.csv(csv,sep=',',header=T);print(paste(csv,'imported',sep=' '))
   name <- strsplit(csv,split='[.]')[[1]][1];print(name)
@@ -136,7 +136,7 @@ for(csv in fns){
   #subset the data of the given species
   print('2-. Loop 2, Select each species')
   for(sp in listSp){
-    # sp <- listSp[1]
+    # sp <- listSp[5]
     print(sp)
     genreName <- strsplit(sp,split=' ')[[1]][1]
     spName <- strsplit(sp,split=' ')[[1]][2]
@@ -224,12 +224,12 @@ for(csv in fns){
         print('model with constant effect')
         
         #test model
-        testModel <- try(F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex),silent=T)
+        testModel <- try(F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
         if(!class(testModel)[1]=='try_error'){
           
           #check validity and presence of effect and survival matrix, then compute modelling
           if(any(ls()=='timevarsurv')){
-            bat.cjs.cst.model <- F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex);print(bat.cjs.cst.model)
+            bat.cjs.cst.model <- F.cjs.estim( capture=~1, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.cst.model)
             print(bat.cjs.cst.model$message)
             
             #save median values of model and goodness of fit
@@ -293,12 +293,12 @@ for(csv in fns){
           print('model with capture effort and sex effect')
           
           #test model
-          testModel <- try(F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex),silent=T)
+          testModel <- try(F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int),silent=T)
           if(!class(testModel)[1]=='try_error'){
             
             #check validity and presence of effect and survival matrix, then compute modelling
             if(any(ls()=='timevarsurv') & any(ls()=='sexvar') & any(ls()=='effortvar')){
-              bat.cjs.SxEff.model <- F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int, group = batSp$sex);print(bat.cjs.SxEff.model)
+              bat.cjs.SxEff.model <- F.cjs.estim( capture=~effortvar-sexvar, survival=~timevarsurv, histories = bat, intervals = int);print(bat.cjs.SxEff.model)
               print(bat.cjs.SxEff.model$message)
               
               #save median values of model and goodness of fit
