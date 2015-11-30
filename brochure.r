@@ -1,69 +1,176 @@
 source('/Volumes/Data/PhD/Script/R/Template.r')
 
 setwd('~/Desktop/CurrentJob/DataBase/')
-setwd('C:/Users/reyemman/Dropbox')
+#setwd('C:/Users/reyemman/Dropbox')
 
-dtf <- read.csv('FRIbat_db_20151110.csv',header=T,sep=',')
+start <- Sys.time();start
+
+dtf <- read.csv('FRIbat_db_20151127.csv',header=T,sep=',')
 names(dtf)
 dim(dtf)
 head(dtf)
 summary(dtf)
 
+
 index <- which(dtf$obs=='DAUD' | dtf$obs=='DBOX' | dtf$obs=='DCHA' | dtf$obs=='DCVU' | 
                  dtf$obs=='DUEXP' | dtf$obs=='DUFQ' | dtf$obs=='DUHET')
 ac <- dtf[index,]
 ac$obs.rcl <- as.factor('1-.Acoustique')
-head(ac)
+# head(ac)
 
 index <- which(dtf$obs=='DCAP')
 cap <- dtf[index,]
 cap$obs.rcl <- as.factor('2-.Captures')
-head(cap)
+# head(cap)
 
-index <- which(dtf$obs=='DCOL' | dtf$obs=='RCRO' | dtf$obs=='TNOU')
+index <- which(dtf$obs=='DTEL')
+rtrck <- dtf[index,]
+rtrck$obs.rcl <- as.factor('3-.R-tracking')
+# head(rtrck)
+
+index <- which(dtf$obs=='DCOL' | dtf$obs=='RCRO' | dtf$obs=='TNOU' | dtf$obs=='DPHO' |  dtf$obs=='DVUE' )
 gite <- dtf[index,]
-gite$obs.rcl <- as.factor('3-.Gites')
-head(gite)
+gite$obs.rcl <- as.factor('4-.Gites')
+# head(gite)
 
 index <- which(dtf$obs=='RCAD' | dtf$obs=='RCECR' | dtf$obs=='RCRA' | dtf$obs=='ROSS' | 
                  dtf$obs=='RPOI')
 musee <- dtf[index,]
-musee$obs.rcl <- as.factor('4-.Museum')
-head(musee)
+musee$obs.rcl <- as.factor('5-.Museum')
+# head(musee)
 
-index <- which(dtf$obs=='DGENE' | dtf$obs=='DJUM' | dtf$obs=='DPHO' | dtf$obs=='DTEL' | 
-                 dtf$obs=='DVID' | dtf$obs=='DVUE' | dtf$obs=='TPRE')
-autre <- dtf[index,]
-autre$obs.rcl <- as.factor('5-.Autre')
-head(autre)
+# index <- which(dtf$obs=='DGENE' | dtf$obs=='DJUM' | dtf$obs=='DVID' | dtf$obs=='TPRE')
+# autre <- dtf[index,]
+# autre$obs.rcl <- as.factor('6-.Autre')
+# head(autre)
 
 
 index <- which(is.na(dtf$obs) | dtf$obs==unique(dtf$obs)[7])
 naDATA <- dtf[index,]
 naDATA$obs.rcl <- as.factor('6-.NA')
-head(naDATA)
+# head(naDATA)
 
-dtf <- rbind(ac,cap,gite,musee,autre,naDATA)
+dtf <- rbind(ac,
+             cap,
+             rtrck,
+             gite,
+             musee,
+#              autre,
+             naDATA)
 names(dtf)
 dim(dtf)
+
+index <- which(dtf$DETE!='DCOL' | is.na(dtf$DETE));length(index)
+naCol <- dtf[index,]
+naCol$col.rcl <- NA
+
+index <- which(dtf$DETE=='DCOL' & dtf$M==5 |
+                 dtf$DETE=='DCOL' & dtf$M==6 |
+                 dtf$DETE=='DCOL' & dtf$M==7 |
+                 dtf$DETE=='DCOL' & dtf$M==8);length(index)
+ete <- dtf[index,]
+ete$col.rcl <- as.factor('1-.Estival')
+# head(ete)
+
+index <- which(dtf$DETE=='DCOL' & dtf$M==4 |
+                 dtf$DETE=='DCOL' & dtf$M==9);length(index)
+transit <- dtf[index,]
+transit$col.rcl <- as.factor('2-.Transit')
+# head(transit)
+
+index <- which(dtf$DETE=='DCOL' & dtf$M==1 |
+                 dtf$DETE=='DCOL' & dtf$M==2 |
+                 dtf$DETE=='DCOL' & dtf$M==3 |
+                 dtf$DETE=='DCOL' & dtf$M==10 |
+                 dtf$DETE=='DCOL' & dtf$M==11 |
+                 dtf$DETE=='DCOL' & dtf$M==12);length(index)
+hivers <- dtf[index,]
+hivers$col.rcl <- as.factor('3-.Hivernal')
+# head(hivers)
+
+index <- which(dtf$DETE=='DCOL' & is.na(dtf$M));length(index)
+autre <- dtf[index,]
+autre$col.rcl <- as.factor('4-.Autre gites')
+# head(autre)
+
+dtf <- rbind(ete,transit,hivers,autre,naCol)
+names(dtf)
+dim(dtf)
+
 
 ind <- which(dtf$Valid==7 | dtf$Kt=='VD')
 dtf <- dtf[ -ind, ]
 dim(dtf)
 summary(dtf)
-# 
-# dtf <- read.csv('FRIbat_db_20151110.csv',header=T,sep=';')
-# names(dtf)
-# write.csv(dtf,'FRIbat_db_20151110.csv',row.names=F)
 
-morph <- read.csv('FRIbat_DB_Morpho_20151110.csv',header=T,sep=',')
-names(morph)
+
+cxcykm <- as.data.frame(tapply(dtf$cxcykm,dtf$cxcykm,length));dim(cxcykm)
+dtf.km.dt <- data.frame('cxcykm'=rownames(cxcykm),cxcykm)
+rownames(dtf.km.dt) <- c(1:dim(dtf.km.dt)[1])
+colnames(dtf.km.dt) <- c('cxcykm','data')
+summary(dtf.km.dt)
+
+ind <- which(dtf$SP=='Pipistrellus sp.' |
+               dtf$SP=='Myotis sp.' |
+               dtf$SP=='Vespertilionidae sp.' |
+               dtf$SP=='Plecotus sp.' |
+               dtf$SP=='Nyctalus sp.' |
+               dtf$SP=='Chiroptera sp.' |
+               dtf$SP=='Eptesicus sp.');length(ind)
+dtf.sp <- dtf[ -ind,];names(dtf.sp)
+sp.cxcykm <- as.data.frame(tapply(dtf.sp$SP, dtf.sp$cxcykm, FUN=function(x) length(unique(x))))
+dtf.km.sp <- data.frame('cxcykm'=rownames(sp.cxcykm),sp.cxcykm)
+rownames(dtf.km.sp) <- c(1:dim(dtf.km.sp)[1])
+colnames(dtf.km.sp) <- c('cxcykm','sp')
+summary(dtf.km.sp)
+
+ind <- which(dtf$Genre=='Vespertilionidae'|
+             dtf$Genre=='Chiroptera');length(ind)
+dtf.gn <- dtf[ -ind,]
+gn.cxcykm <- as.data.frame(tapply(dtf.gn$Genre, dtf.gn$cxcykm, FUN=function(x) length(unique(x))))
+dtf.km.gn <- data.frame('cxcykm'=rownames(gn.cxcykm),gn.cxcykm)
+rownames(dtf.km.gn) <- c(1:dim(dtf.km.gn)[1])
+colnames(dtf.km.gn) <- c('cxcykm','gn')
+summary(dtf.km.gn)
+
+dtf.km <- merge(dtf.km.dt,merge(dtf.km.sp,dtf.km.gn,by='cxcykm',all=T),by='cxcykm',all=T)
+summary(dtf.km)
+write.csv(dtf.km,'cxcykm.dt.sp.gn.csv')
+
+# 
+# dtf <- read.csv('FRIbat_db_20151123.csv',header=T,sep=';')
+# names(dtf)
+# write.csv(dtf,'FRIbat_db_20151123.csv',row.names=F)
+# 
+# dtf <- read.csv('FRIbat_DB_Morpho_20151110.csv',header=T,sep=';')
+# names(dtf)
+# write.csv(dtf,'FRIbat_DB_Morpho_20151110.csv',row.names=F)
+
+morphTot <- read.csv('FRIbat_DB_Morpho_20151110.csv',header=T,sep=',')
+morphAlive <- read.csv('FRIbat_DB_Morpho_20151120.csv',header=T,sep=',')
+names(morphAlive)
+
+index <- which(morphAlive $Age=='A')
+morph <- morphAlive[index,];dim(morph)
+
+
+dtf.ch <- read.csv('ReyE_5x5_chiros_CH_20151125.csv',header=T,sep=',')
+names(dtf.ch)
+# write.csv(dtf.ch,'ReyE_5x5_chiros_CH_20151125.csv',row.names=F)
+
 
 fn <- file.path("/Volumes/Data/GIS/swissadmin/Fribourg.shp")
 shp.fr <- readShapeSpatial(fn)
 proj4string(shp.fr) <- CRS(proj)
 shp.ext <-  shp.fr@bbox 
 plot(shp.fr)
+
+fn <- file.path('/Volumes/Data/GIS/swissadmin/CH_Boundaries.shp')
+ch <- readShapeSpatial(fn)
+proj4string(ch) <- CRS(proj)
+shp.ext <-  ch@bbox 
+plot(ch)
+
 
 fn <- file.path("Colonies_NEBEVD_1x1km_CSCF_20151115.shp")
 bat.outer <- readShapeSpatial(fn)
@@ -105,6 +212,117 @@ plot(river,add=T,col='royalblue4')
 plot(water,add=T,col='steelblue',border='royalblue4')
 plot(shp.fr,add=T)
 
+#####
+#Reprises Myo Myo
+
+begin.coord <- data.frame(cx=c(564250,585080,585080,564800,568624,578000,564250,552725,542825,573750), cy=c(144300,163520,163520,171650,152041,183500,144300,199561,199025,167175))
+
+end.coord <- data.frame(cx=c(573750,572480,573750,573750,573750,572480,572480,556200,572480,570500), cy=c(167175,185700,167175,167175,167175,185700,185700,186200,185700,151900))
+
+dt <- data.frame('label'=c('015F','034J','044J','455J','456J','457J','525M','608I','659I','953I'),
+'YCap'=c(1991,1992,1992,1999,2000,2001,2001,1991,1992,1992),
+'MCap'=c(8,8,9,9,9,8,8,8,8,7),
+'YRecap'=c(2002,2002,2002,2002,2006,2007,2008,1991,2001,1992),
+'MRecap'=c(8,6,8,8,6,6,6,9,6,9))
+
+l <- vector("list", nrow(begin.coord))
+library(sp)
+for (i in seq_along(l)) {
+    l[[i]] <- Lines(list(Line(rbind(begin.coord[i, ], end.coord[i,]))), as.character(i))
+}
+
+l.shp <- SpatialLines(l)
+l.shp.data <- SpatialLinesDataFrame(l.shp,dt,match.ID=F)
+proj4string(l.shp.data) <- CRS(proj)
+plot(l.shp.data,lwd=2,col='tomato')
+#writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/MyoMyo_Recap_FRIbat.shp')
+
+
+#####
+#Reprises Myo Dau
+begin.coord <- data.frame(cx=c(529040,564250,568620,570120,570120,540060,579440,529930), cy=c(198160,144300,151980,149350,149350,198160,183750,183160))
+
+end.coord <- data.frame(cx=c(556142,568624,564250,569600,569500,579440,533753,553175), cy=c(184969,152041,144300,148750,148800,183750,195612,187925))
+
+dt <- data.frame('label'=c('F2-845','M124','M124','M184','M186','R340','R340','Z202'),
+'YCap'=c(2014,1989,2000,1989,1989,1992,1994,2007),
+'MCap'=c(9,8,9,7,7,6,7,4),
+'YRecap'=c(2015,1993,2000,1993,1993,1994,1996,2007),
+'MRecap'=c(7,9,9,7,7,7,8,5))
+
+
+l <- vector("list", nrow(begin.coord))
+library(sp)
+for (i in seq_along(l)) {
+    l[[i]] <- Lines(list(Line(rbind(begin.coord[i, ], end.coord[i,]))), as.character(i))
+}
+
+l.shp <- SpatialLines(l)
+l.shp.data <- SpatialLinesDataFrame(l.shp,dt,match.ID=F)
+proj4string(l.shp.data) <- CRS(proj)
+plot(l.shp.data,lwd=2,col='tomato')
+#writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/MyoDau_Recap_FRIbat.shp')
+
+
+#####
+#Reprises Ple Aur
+begin.coord <- data.frame(cx=c(564250,565340,564250,564250,564250,565875,565875,564250,564250,564250), cy=c(144300,143081,144300,144300,144300,144263,144263,144300,144300,144300))
+
+end.coord <- data.frame(cx=c(565340,564250,565875,565875,565875,564250,564250,555200,554700,556600), cy=c(143081,144300,144263,144263,144263,144300,144300,152400,151200,158400))
+
+dt <- data.frame('label'=c('J112','J344','J435','J867','P616','P616','T127','T183','U932','V520'),
+'YCap'=c(1987,1989,1986,1997,1991,1998,1998,1998,2000,2001),
+'MCap'=c(8,8,9,9,8,9,9,8,9,8),
+'YRecap'=c(1989,1991,1987,1998,1998,2009,1998,1998,2002,2005),
+'MRecap'=c(8,10,8,9,9,8,9,8,6,8))
+
+
+l <- vector("list", nrow(begin.coord))
+library(sp)
+for (i in seq_along(l)) {
+    l[[i]] <- Lines(list(Line(rbind(begin.coord[i, ], end.coord[i,]))), as.character(i))
+}
+
+l.shp <- SpatialLines(l)
+l.shp.data <- SpatialLinesDataFrame(l.shp,dt,match.ID=F)
+proj4string(l.shp.data) <- CRS(proj)
+plot(l.shp.data,lwd=2,col='tomato')
+#writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/PleAur_Recap_FRIbat.shp')
+
+
+
+
+
+#####
+#Reprises FRIbat
+begin.coord <- data.frame(cx=c(627835,529040,564250,568620,570120,570120,540060,579440,529930,564250,585080,585080,564800,568624,578000,564250,552725,542825,573750,514750,564250,565340,564250,564250,564250,565875,565875,564250,564250,564250,529930),
+cy=c(128950,198160,144300,151980,149350,149350,198160,183750,183160,144300,163520,163520,171650,152041,183500,144300,199561,199025,167175,145500,144300,143081,144300,144300,144300,144263,144263,144300,144300,144300,183160))
+
+end.coord <- data.frame(cx=c(573750,556142,568624,564250,569600,569500,579440,533753,553175,573750,572480,573750,573750,573750,572480,572480,556200,572480,570500,551850,565340,564250,565875,565875,565875,564250,564250,555200,554700,556600,565130),
+cy=c(167175,184969,152041,144300,148750,148800,183750,195612,187925,167175,185700,167175,167175,167175,185700,185700,186200,185700,151900,186700,143081,144300,144263,144263,144263,144300,144300,152400,151200,158400,185280))
+
+dt <- data.frame('ESPECE' = c('Myotis blythii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Nyctalus noctula','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Pipistrellus pipistrellus'),
+'label'=c('065M','F2-845','M124','M124','M184','M186','R340','R340','Z202','015F','034J','044J','455J','456J','457J','525M','608I','659I','953I','219L','J112','J344','J435','J867','P616','P616','T127','T183','U932','V520','C3-612'),
+'YCap'=c(1998,2014,1989,2000,1989,1989,1992,1994,2007,1991,1992,1992,1999,2000,2001,2001,1991,1992,1992,2006,1987,1989,1986,1997,1991,1998,1998,1998,2000,2001,2009),
+'MCap'=c(8,9,8,9,7,7,6,7,4,8,8,9,9,9,8,8,8,8,7,2,8,8,9,9,8,9,9,8,9,8,7),
+'YRecap'=c(2009,2015,1993,2000,1993,1993,1994,1996,2007,2002,2002,2002,2002,2006,2007,2008,1991,2001,1992,2006,1989,1991,1987,1998,1998,2009,1998,1998,2002,2005,2010),
+'MRecap'=c(6,7,9,9,7,7,7,8,5,8,6,8,8,6,6,6,9,6,9,5,8,10,8,9,9,8,9,8,6,8,6))
+
+
+l <- vector("list", nrow(begin.coord))
+library(sp)
+for (i in seq_along(l)) {
+    l[[i]] <- Lines(list(Line(rbind(begin.coord[i, ], end.coord[i,]))), as.character(i))
+}
+
+l.shp <- SpatialLines(l)
+l.shp.data <- SpatialLinesDataFrame(l.shp,dt,match.ID=F)
+proj4string(l.shp.data) <- CRS(proj)
+plot(l.shp.data,lwd=2,col='tomato')
+#writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/Recap_FRIbat.shp')
+
+
+
 
 # datas.srtm <- extract(x=dem,y=xy);summary(datas.srtm)
 # dtf <- cbind(dtf,datas.srtm)
@@ -128,6 +346,7 @@ plot(shp.fr,add=T)
 dim(dtf)
 names(dtf)
 
+
 sp <- 'Chiroptera'
 
 listSp <- c('Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus')
@@ -150,37 +369,43 @@ listSp <- c('Myotis blythii','Rhinolophus ferrumequinum');listSp
 for(sp in listSp){
   # sp <- listSp[1];sp
   # sp <- listSp[21];sp
+  # sp <- listSp[8];sp
   # sp <- listSp[10];sp
   print(sp)
   genreName <- strsplit(sp,split=' ')[[1]][1]
   spName <- strsplit(sp,split=' ')[[1]][2]
   pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/sp',
-                   paste(
-                     paste(toupper(strsplit(genreName,split='')[[1]][1]),strsplit(genreName,split='')[[1]][2],strsplit(genreName,split='')[[1]][3],
-                           toupper(strsplit(spName,split='')[[1]][1]),strsplit(spName,split='')[[1]][2],strsplit(spName,split='')[[1]][3],
-                           sep=''),'data.pdf',sep='_'),sep='/')
-  
-#   pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
+             paste(
+             paste(toupper(strsplit(genreName,split='')[[1]][1]),strsplit(genreName,split='')[[1]][2],strsplit(genreName,split='')[[1]][3],
+                   toupper(strsplit(spName,split='')[[1]][1]),strsplit(spName,split='')[[1]][2],strsplit(spName,split='')[[1]][3],
+             sep=''),'data.pdf',sep='_'),sep='/')
+
+# pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
   
   print(pdfName)
   
+#Select dtf for species
 batSp<-subset(dtf,dtf$SP==sp);dim(batSp)
-# batSp<-subset(dtf,dtf$Genre==sp);dim(batSp)
-# batSp <- dtf
-
-  names(batSp)
-  dim(batSp)
-  
-bat.outer.sp <- subset(bat.outer,bat.outer@data$ESPECE==sp)
-# bat.outer.sp <- subset(bat.outer,bat.outer@data$Genre==sp)
-# bat.outer.sp <- bat.outer
-  
-  
+bat.outer.sp <- subset(bat.outer,bat.outer@data$ESPECE==sp) 
+if(any(l.shp.data@data$ESPECE ==sp)){l.shp.data.sp <-  subset(l.shp.data,l.shp.data@data$ESPECE==sp)}
 batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
+batCH <- subset(dtf.ch, dtf.ch$ESPECE==sp);dim(batCH)
+
+
+###--Select dtf for Gender
+# batSp<-subset(dtf,dtf$Genre==sp);dim(batSp)
+# bat.outer.sp <- subset(bat.outer,bat.outer@data$Genre==sp)
 # batmorph <- subset(morph,morph$Genre==sp);dim(batmorph)
+# batCH <- subset(dtf.ch, dtf.ch$Genre==sp);dim(batCH)
+
+###--Select dtf for Chiroptera
+# batSp <- dtf
+# bat.outer.sp <- bat.outer
 # batmorph <- morph
-  names(batmorph)
-  dim(batmorph)
+# batCH <- dtf.ch
+
+names(batSp);dim(batSp)
+names(batmorph);dim(batmorph)
   
   print(summary(batSp$datas.dem2))
   print(summary(batmorph$AB,na.rm=T))
@@ -188,6 +413,8 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   print(summary(batSp$TYP_COL))
   print(summary(batSp$obs))
   print(summary(batSp$obs.rcl))
+  print(summary(batSp$col.rcl))
+
 
   
   dtf.fc<-subset(batSp,batSp$TYP_COL=='FC');dim(dtf.fc)
@@ -216,17 +443,17 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   Pce <- median(batmorph$Pce,na.rm=T)
   GrffPce <- median(batmorph$GrffPce,na.rm=T)
 
-#   ABmin <- NA
-#   ABmax <- NA
-#   ABmedian <- NA
-#   ABmean <- NA
-#   Pmin <- NA
-#   Pmax <- NA
-#   Pmedian <- NA
-#   Pmean <- NA
-#   Pce <- NA
-#   GrffPce <- NA
-#   
+  # ABmin <- NA
+  # ABmax <- NA
+  # ABmedian <- NA
+  # ABmean <- NA
+  # Pmin <- NA
+  # Pmax <- NA
+  # Pmedian <- NA
+  # Pmean <- NA
+  # Pce <- NA
+  # GrffPce <- NA
+   
   dtf.resum.site <- t(data.frame('nbre données' = nData,
                                  'ancienne donnée' = oldData,
                                  'donnée récente' = lastData,
@@ -254,24 +481,37 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   #Create Point shapefile for the given dtf
   names(dtf)
   xy <- data.frame('cx' = batSp$cx,'cy' = batSp$cy)
-  shp <- SpatialPointsDataFrame(coords = xy, data = batSp);shp
-  proj4string(shp) <- CRS(proj);shp
+  bat.shp <- SpatialPointsDataFrame(coords = xy, data = batSp); bat.shp
+  proj4string(bat.shp) <- CRS(proj); bat.shp
   
-  plot(shp,col='tomato')
+   #Create Point shapefile for the given dtf
+  names(dtf.ch)
+  xy.ch <- data.frame('cx' = batCH$XN5,'cy' = batCH$YN5)
+  batCH.shp <- SpatialPointsDataFrame(coords = xy.ch, data = batCH); batCH.shp
+  proj4string(batCH.shp) <- CRS(proj); batCH.shp
+  
+  plot(bat.shp,col='tomato')
   plot(bat.outer.sp,add=T,col='steelblue')
   head(batSp);tail(batSp)
-  shp
+  bat.shp
   
   pdf(pdfName,family='Akkurat',paper='a4r',width=11,height=8.5)
 #   pdf('testrplot.pdf',paper='a4r',width=11,height=8.5)
+
+	plot(ch,main=sp)
+	plot(batCH.shp,add=T,pch=15,col='grey35',cex=0.8)
   
   plot(dem,col=grey(0:255 / 255),ext=extent,alpha=0.4,xlab='Coord X', ylab='Coord Y',legend=F,main=sp)
   plot(dem.fr,add=T,col=BrBG(255),alpha=0.6,legend=F)
   plot(river,add=T,col='royalblue4')
   plot(water,add=T,col='steelblue',border='royalblue4')
   plot(shp.fr,add=T)
-  plot(shp,add=T,pch=4, col='tomato',lwd=2)
+  if(any(ls()=='l.shp.data.sp')){plot(l.shp.data.sp,add=T,lwd=2,col='yellow')
+  	rm(l.shp.data.sp)}
+  plot(bat.shp,add=T,pch=4, col='tomato',lwd=2)
   plot(bat.outer.sp,add=T,pch=4,col='limegreen',lwd=2)
+    
+  
   
   #######
   #Type dtf
@@ -305,9 +545,9 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
   box(col="grey")
   
-#   axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)
+axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)
   # axis for RhiFer and MyoBly: 
-  axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)
+# axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)
   axis(2,cex.axis=1,col.axis='grey30',col='grey30')
   axis(4,cex.axis=1,col.axis='grey30',col='grey30')
 # mtext(sp,side=3,line=3,col='grey10')
@@ -316,8 +556,6 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
               'Données la plus récente:',lastData,sep=' '),
         side=3, line=1,col='grey30')
   
-  #   h5 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=5)
-  #   abline(h=h5,lty=6,lwd=0.5)
   h2 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=2)
   abline(h=h2,lty=2,lwd=0.5)
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
@@ -340,10 +578,11 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   M.dat <- as.data.frame(M)
   dtf.seq <- merge(M.dat,M.seq,by.x='Var1',by.y='M.rcl',all=T)
   dtf.seq$M.rcl <- as.numeric(as.character(dtf.seq$Var1))
-  dtf.seq <- dtf.seq[ order(dtf.seq[,3]), ]
+  dtf.seq <- dtf.seq[ order(dtf.seq[,3]), ];print(dtf.seq)
   
-  MProp <- floor(M/sum(M)*100)
-  MName <- paste(M,paste(MProp,'%',sep=' '),sep='-');MName
+  MProp <- floor(dtf.seq $Freq/sum(dtf.seq$Freq,na.rm=T)*100)
+  MName <- paste(dtf.seq$Freq,paste(MProp,'%',sep=' '),sep='-');MName
+  MName[which(is.na(dtf.seq$Freq))] <- NA;MName
   
   plot(dtf.seq$M.rcl,dtf.seq$Freq,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato',ylim=c(0,max(dtf.seq$Freq,na.rm=T)+1))
   text(dtf.seq$M.rcl,dtf.seq$Freq+0.5, labels = MName,col='grey20',cex=0.8)
@@ -374,8 +613,9 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   dtf.seq$alt.rcl <- as.numeric(as.character(dtf.seq$Var1))
   dtf.seq <- dtf.seq[ order(dtf.seq[,3]), ]
   
-  altProp <- floor(alt/sum(alt)*100)
-  altName <- paste(alt,paste(altProp,'%',sep=' '),sep='-');altName
+  altProp <- floor(dtf.seq $Freq/sum(dtf.seq$Freq,na.rm=T)*100)
+  altName <- paste(dtf.seq$Freq,paste(altProp,'%',sep=' '),sep='-'); altName
+  altName[which(is.na(dtf.seq$Freq))] <- NA; altName
   # plot(alt,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
   plot(dtf.seq$alt.rcl,dtf.seq$Freq,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato',ylim=c(0,max(dtf.seq$Freq,na.rm=T)+1))
   text(dtf.seq$alt.rcl,dtf.seq$Freq+0.5, labels = altName,col='grey20',cex=0.8)
@@ -432,19 +672,19 @@ batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
   col <- 'steelblue'
   colCode <- c(colCode, col)}
   if(any(colnames=='2-.Captures',na.rm=T)){
-  col <- 'turquoise3'
+  col <- 'turquoise'
   colCode <- c(colCode, col)}
-  if(any(colnames=='3-.Gites',na.rm=T)){
+if(any(colnames=='3-.R-tracking',na.rm=T)){
+  col <- 'lightskyblue'
+  colCode <- c(colCode, col)}
+if(any(colnames=='4-.Gites',na.rm=T)){
   col <- 'limegreen'
   colCode <- c(colCode, col)}
-  if(any(colnames=='4-.Museum',na.rm=T)){
+if(any(colnames=='5-.Museum',na.rm=T)){
   col <- 'gold'
   colCode <- c(colCode, col)}
-  if(any(colnames=='5-.Autre',na.rm=T)){
-  col <- 'tomato'
-  colCode <- c(colCode, col)}
 if(any(colnames=='6-.NA',na.rm=T)){
-  col <- 'red4'
+  col <- 'tomato'
   colCode <- c(colCode, col)}
   print(colCode)
 
@@ -464,7 +704,7 @@ if(any(colnames=='6-.NA',na.rm=T)){
   #Type colonies
   #######
   
-  typCOL <- table(batSp$TYP_COL,useNA='always')
+  typCOL <- table(batSp$col.rcl)
   propCOL <- floor(typCOL/sum(typCOL)*100)
   TYPName <- paste(typCOL,paste(propCOL,'%',sep=' '),sep='-');TYPName
   
@@ -484,11 +724,11 @@ if(any(colnames=='6-.NA',na.rm=T)){
   
   # typCOL <- table(batSp$TYP_COL,useNA='no')
   # proptypCOL <- floor(typCOL/sum(typCOL)*100)
-  # pie(proptypCOL, clockwise=T,col=jet.colors(length(typCOL)),label=names(typCOL),cex=0.6)
+  # pie(propCOL, clockwise=T,col=jet.colors(length(typCOL)),label=names(typCOL),cex=0.6)
   # mtext("Type de gîte", side=3, line=1,cex=1.2,col="grey30")
   # 
   
-  
+
   #######
   #Type Land Use
   #######
@@ -515,3 +755,5 @@ if(any(colnames=='6-.NA',na.rm=T)){
   dev.off()
   embed_fonts(pdfName,outfile=pdfName)
 }
+end <- Sys.time()
+end-start
