@@ -1,3 +1,19 @@
+#########################################################
+#########################################################
+# © eRey.ch | bioGIS; erey@biogis.ch
+# created on 2015.11.17
+# last modified on 2015.12.01
+# source('/Volumes/Data/PhD/Script/R/brochure.r')
+# https://github.com/biogis/r/blob/master/brochure.r
+
+# Let the scipt work.
+
+#########################################################
+#########################################################
+# Have Fun
+
+rm(list=ls())
+
 source('/Volumes/Data/PhD/Script/R/Template.r')
 
 setwd('~/Desktop/CurrentJob/DataBase/')
@@ -347,12 +363,27 @@ dim(dtf)
 names(dtf)
 
 
-sp <- 'Chiroptera'
+# # listSp <- c('Chiroptera')
 
-listSp <- c('Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus')
+# listSp <- c('Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus')
 
-# 
-listSp <- c('Barbastella barbastellus',
+# # 
+# listSp <- c('Barbastella barbastellus',
+            # 'Eptesicus nilssonii','Eptesicus serotinus',
+            # 'Myotis alcathoe','Myotis bechsteinii','Myotis brandtii',
+            # 'Myotis daubentonii','Myotis myotis','Myotis mystacinus','Myotis nattereri',
+            # 'Nyctalus leisleri','Nyctalus noctula',
+            # 'Pipistrellus kuhlii','Pipistrellus nathusii','Pipistrellus pipistrellus','Pipistrellus pygmaeus',
+            # 'Plecotus auritus','Plecotus austriacus',
+            # 'Miniopterus schreibersii',
+            # 'Rhinolophus hipposideros',
+            # 'Vespertilio murinus')
+# # 
+# listSp <- c('Myotis blythii','Rhinolophus ferrumequinum');listSp
+
+listSp <- c('Chiroptera',
+			'Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus',
+			'Barbastella barbastellus',
             'Eptesicus nilssonii','Eptesicus serotinus',
             'Myotis alcathoe','Myotis bechsteinii','Myotis brandtii',
             'Myotis daubentonii','Myotis myotis','Myotis mystacinus','Myotis nattereri',
@@ -361,9 +392,8 @@ listSp <- c('Barbastella barbastellus',
             'Plecotus auritus','Plecotus austriacus',
             'Miniopterus schreibersii',
             'Rhinolophus hipposideros',
-            'Vespertilio murinus')
-# 
-listSp <- c('Myotis blythii','Rhinolophus ferrumequinum');listSp
+            'Vespertilio murinus',
+            'Myotis blythii','Rhinolophus ferrumequinum')
 
 
 for(sp in listSp){
@@ -372,17 +402,70 @@ for(sp in listSp){
   # sp <- listSp[8];sp
   # sp <- listSp[10];sp
   print(sp)
-  genreName <- strsplit(sp,split=' ')[[1]][1]
-  spName <- strsplit(sp,split=' ')[[1]][2]
-  pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/sp',
-             paste(
-             paste(toupper(strsplit(genreName,split='')[[1]][1]),strsplit(genreName,split='')[[1]][2],strsplit(genreName,split='')[[1]][3],
-                   toupper(strsplit(spName,split='')[[1]][1]),strsplit(spName,split='')[[1]][2],strsplit(spName,split='')[[1]][3],
-             sep=''),'data.pdf',sep='_'),sep='/')
 
-# pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
+###--Select for Chiroptera
+  if(any(sp=='Chiroptera')){
+  	spAbbr <- sp
+  	pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
+  	batSp <- dtf
+  	bat.outer.sp <- bat.outer
+  	batmorph <- morph
+  	batCH <- dtf.ch
+
+  ABmin <- NA
+  ABmax <- NA
+  ABmedian <- NA
+  ABmean <- NA
+  Pmin <- NA
+  Pmax <- NA
+  Pmedian <- NA
+  Pmean <- NA
+  Pce <- NA
+  GrffPce <- NA
+  	}
+
+###--Select for Gender
+  if(any(sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  	spAbbr <- sp
+  	pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
+  		batSp<-subset(dtf,dtf$Genre==sp);dim(batSp)
+	bat.outer.sp <- subset(bat.outer,bat.outer@data$Genre==sp)
+	batmorph <- subset(morph,morph$Genre==sp);dim(batmorph)
+	batCH <- subset(dtf.ch, dtf.ch$Genre==sp);dim(batCH)
+
+  ABmin <- NA
+  ABmax <- NA
+  ABmedian <- NA
+  ABmean <- NA
+  Pmin <- NA
+  Pmax <- NA
+  Pmedian <- NA
+  Pmean <- NA
+  Pce <- NA
+  GrffPce <- NA
+}
   
-  print(pdfName)
+  if(!any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  	  genreName <- strsplit(sp,split=' ')[[1]][1]
+  	  spName <- strsplit(sp,split=' ')[[1]][2]
+  	  spAbbr <- paste(toupper(strsplit(genreName,split='')[[1]][1]),strsplit(genreName,split='')[[1]][2],strsplit(genreName,split='')[[1]][3],
+  	  				  toupper(strsplit(spName,split='')[[1]][1]),strsplit(spName,split='')[[1]][2],strsplit(spName,split='')[[1]][3],sep='')
+      pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/sp',paste(spAbbr,'data.pdf',sep='_'),sep='/')
+      
+       ABmin <- min(batmorph$AB,na.rm=T)
+  ABmax <- max(batmorph$AB,na.rm=T)
+  ABmedian <- median(batmorph$AB,na.rm=T)
+  ABmean <- mean(batmorph$AB,na.rm=T)
+  Pmin <- min(batmorph$P,na.rm=T)
+  Pmax <- max(batmorph$P,na.rm=T)
+  Pmedian <- median(batmorph$P,na.rm=T)
+  Pmean <- mean(batmorph$P,na.rm=T)
+  Pce <- median(batmorph$Pce,na.rm=T)
+  GrffPce <- median(batmorph$GrffPce,na.rm=T)
+}
+
+print(spAbbr)
+print(pdfName)
   
 #Select dtf for species
 batSp<-subset(dtf,dtf$SP==sp);dim(batSp)
@@ -391,18 +474,6 @@ if(any(l.shp.data@data$ESPECE ==sp)){l.shp.data.sp <-  subset(l.shp.data,l.shp.d
 batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
 batCH <- subset(dtf.ch, dtf.ch$ESPECE==sp);dim(batCH)
 
-
-###--Select dtf for Gender
-# batSp<-subset(dtf,dtf$Genre==sp);dim(batSp)
-# bat.outer.sp <- subset(bat.outer,bat.outer@data$Genre==sp)
-# batmorph <- subset(morph,morph$Genre==sp);dim(batmorph)
-# batCH <- subset(dtf.ch, dtf.ch$Genre==sp);dim(batCH)
-
-###--Select dtf for Chiroptera
-# batSp <- dtf
-# bat.outer.sp <- bat.outer
-# batmorph <- morph
-# batCH <- dtf.ch
 
 names(batSp);dim(batSp)
 names(batmorph);dim(batmorph)
@@ -432,27 +503,7 @@ names(batmorph);dim(batmorph)
   meanAlt <- floor(mean(batSp$datas.dem2,na.rm=T))
   medianAlt <- floor(median(batSp$datas.dem2,na.rm=T))
   nMorph <- dim(batmorph)[1]
-  ABmin <- min(batmorph$AB,na.rm=T)
-  ABmax <- max(batmorph$AB,na.rm=T)
-  ABmedian <- median(batmorph$AB,na.rm=T)
-  ABmean <- mean(batmorph$AB,na.rm=T)
-  Pmin <- min(batmorph$P,na.rm=T)
-  Pmax <- max(batmorph$P,na.rm=T)
-  Pmedian <- median(batmorph$P,na.rm=T)
-  Pmean <- mean(batmorph$P,na.rm=T)
-  Pce <- median(batmorph$Pce,na.rm=T)
-  GrffPce <- median(batmorph$GrffPce,na.rm=T)
-
-  # ABmin <- NA
-  # ABmax <- NA
-  # ABmedian <- NA
-  # ABmean <- NA
-  # Pmin <- NA
-  # Pmax <- NA
-  # Pmedian <- NA
-  # Pmean <- NA
-  # Pce <- NA
-  # GrffPce <- NA
+ 
    
   dtf.resum.site <- t(data.frame('nbre données' = nData,
                                  'ancienne donnée' = oldData,
@@ -534,7 +585,7 @@ names(batmorph);dim(batmorph)
   A.dat <- as.data.frame(A)
   dtf.seq <- merge(A.dat,A.seq,by.x='Var1',by.y='A.rcl',all=T)
   dtf.seq$A.rcl <- as.numeric(as.character(dtf.seq$Var1))
-  dtf.seq[ order(dtf.seq[,3]), ]
+  dtf.seq <- dtf.seq[ order(dtf.seq[,3]),]
   
   AProp <- floor(A/sum(A)*100)
   AName <- paste(A,paste(AProp,'%',sep=' '),sep='-');AName
@@ -545,9 +596,13 @@ names(batmorph);dim(batmorph)
   mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
   box(col="grey")
   
-axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)
+  if(!any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
+  	axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
   # axis for RhiFer and MyoBly: 
-# axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)
+  if(any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
+  	axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
+
+
   axis(2,cex.axis=1,col.axis='grey30',col='grey30')
   axis(4,cex.axis=1,col.axis='grey30',col='grey30')
 # mtext(sp,side=3,line=3,col='grey10')
@@ -556,17 +611,26 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
               'Données la plus récente:',lastData,sep=' '),
         side=3, line=1,col='grey30')
   
+  if(!any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
   h2 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=2)
   abline(h=h2,lty=2,lwd=0.5)
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
   abline(h=h10,lty=1,lwd=0.7)
   h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
   abline(h=h50,lty=1,lwd=1)
+  }
+
+  if(any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
+  abline(h=h10,lty=1,lwd=0.7)
+  h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
+  abline(h=h50,lty=1,lwd=1)
+  }
 
   # text(min(batSp$A,na.rm=T),max(A)-(max(A/2)), paste(capture.output(dtf.resum.site), collapse='\n'), pos=4,cex=1)
   # mtext(sp,side=3,line=3,col='grey10')
-  
-  
+  csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_Year','.csv',sep='')
+  write.csv(dtf.seq[,2:3],csvName,row.names=F)
   
   
   #######
@@ -579,6 +643,8 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
   dtf.seq <- merge(M.dat,M.seq,by.x='Var1',by.y='M.rcl',all=T)
   dtf.seq$M.rcl <- as.numeric(as.character(dtf.seq$Var1))
   dtf.seq <- dtf.seq[ order(dtf.seq[,3]), ];print(dtf.seq)
+  dtf.seq <- dtf.seq[ order(dtf.seq[,3]),]
+
   
   MProp <- floor(dtf.seq $Freq/sum(dtf.seq$Freq,na.rm=T)*100)
   MName <- paste(dtf.seq$Freq,paste(MProp,'%',sep=' '),sep='-');MName
@@ -599,6 +665,9 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
   # mtext(paste('Données la plus courante:',floor(median(batSp$M,na.rm=T)),sep=' '),
   #       side=3, line=1,col='grey10')
   
+  csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_Month','.csv',sep='')
+  write.csv(dtf.seq[,2:3],csvName,row.names=F)
+
   
   #######
   #Type altitude
@@ -611,7 +680,7 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
   alt.dat <- as.data.frame(alt)
   dtf.seq <- merge(alt.dat,alt.seq,by.x='Var1',by.y='alt.rcl',all=T)
   dtf.seq$alt.rcl <- as.numeric(as.character(dtf.seq$Var1))
-  dtf.seq <- dtf.seq[ order(dtf.seq[,3]), ]
+  dtf.seq <- dtf.seq[ order(dtf.seq[,3]),]
   
   altProp <- floor(dtf.seq $Freq/sum(dtf.seq$Freq,na.rm=T)*100)
   altName <- paste(dtf.seq$Freq,paste(altProp,'%',sep=' '),sep='-'); altName
@@ -635,6 +704,9 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
               'Altitude médiane',medianAlt,'--',
               'Altitude la plus élevée:',maxAlt,sep=' '),
         side=3, line=1,col='grey30')
+        
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_Altitude','.csv',sep='')
+write.csv(dtf.seq[,2:3],csvName,row.names=F)
   
   
   #######
@@ -660,6 +732,10 @@ axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='gr
   # propobs <- floor(obs/sum(obs)*100)
   # pie(propobs, clockwise=T,col=jet.colors(length(typCOL)),label=names(obs),cex=0.6)
   # mtext("Type d'observations", side=3, line=1,cex=1.2,col="grey30")
+  
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_TYPObs','.csv',sep='')
+write.csv(obs,csvName,row.names=F)
+
   
   #######
   #Type Year vs. obs
@@ -698,7 +774,9 @@ if(any(colnames=='6-.NA',na.rm=T)){
   # axis(2,cex.axis=1,col.axis='grey30',col='grey30')
   # mtext(sp,side=3, line=3,col='grey10')
   
-  
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_TYPObs_vs_Year','.csv',sep='')
+write.csv(Y.obs,csvName,row.names=F)
+
   
   #######
   #Type colonies
@@ -728,6 +806,9 @@ if(any(colnames=='6-.NA',na.rm=T)){
   # mtext("Type de gîte", side=3, line=1,cex=1.2,col="grey30")
   # 
   
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_typCOL','.csv',sep='')
+write.csv(typCOL,csvName,row.names=F)
+
 
   #######
   #Type Land Use
@@ -751,6 +832,10 @@ if(any(colnames=='6-.NA',na.rm=T)){
   # mtext(sp,side=3, line=3,col='grey10')
   mtext("Type de de statistique de la superficie 79-85 (=as85), 92-97 (=as97), 04-09 (=as09)", side=3, line=2,cex=1,col="grey30")
   mtext("classification selon: as85: 1973-1991, as97: 1992-2003, as09: 2004-2015", side=3, line=1,cex=1,col="grey30")
+  
+  
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_LandUse','.csv',sep='')
+write.csv(lause,csvName,row.names=F)
   
   dev.off()
   embed_fonts(pdfName,outfile=pdfName)
