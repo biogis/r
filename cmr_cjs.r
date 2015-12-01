@@ -136,6 +136,7 @@ for(csv in fns){
   #subset the data of the given species
   print('2-. Loop 2, Select each species')
   for(sp in listSp){
+    # sp <- listSp[2]
     # sp <- listSp[5]
     print(sp)
     genreName <- strsplit(sp,split=' ')[[1]][1]
@@ -158,9 +159,9 @@ for(csv in fns){
         spLim <- which(names(dtf)=='species')-1
         bat<-as.matrix(batSp[,2:spLim])
         # Gouffre Baume Barree; fns[1], yrs as doys
-        yrs <- c(230,240,249,259);print(length(yrs))
-        effort <- log(c(1,2,3,4));print(length(effort))
-        int <- c(1,1,1)
+        yrs <- c(230,240,249,259,369);print(length(yrs))
+        effort <- log(c(1,2,3,4,1));print(length(effort))
+        int <- yrs/365
       }
       
       if(!csv=='baume_barree.csv'){
