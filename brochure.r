@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2015.11.17
-# last modified on 2015.12.02
+# last modified on 2015.12.01
 # source('/Volumes/Data/PhD/Script/R/brochure.r')
 # https://github.com/biogis/r/blob/master/brochure.r
 # Let the scipt work.
@@ -20,13 +20,13 @@ setwd('~/Desktop/CurrentJob/DataBase/')
 
 start <- Sys.time();start
 
-dtf <- read.csv('FRIbat_db_20151127.csv',header=T,sep=',')
+dtf <- read.csv('FRIbat_db_20151202.csv',header=T,sep=',')
 names(dtf)
 dim(dtf)
 head(dtf)
 summary(dtf)
 
-
+unique(dtf$obs)
 index <- which(dtf$obs=='DAUD' | dtf$obs=='DBOX' | dtf$obs=='DCHA' | dtf$obs=='DCVU' | 
                  dtf$obs=='DUEXP' | dtf$obs=='DUFQ' | dtf$obs=='DUHET')
 ac <- dtf[index,]
@@ -60,7 +60,7 @@ musee$obs.rcl <- as.factor('5-.Museum')
 # head(autre)
 
 
-index <- which(is.na(dtf$obs) | dtf$obs==unique(dtf$obs)[7])
+index <- which(is.na(dtf$obs) | dtf$obs==unique(dtf$obs)[1])
 naDATA <- dtf[index,]
 naDATA$obs.rcl <- as.factor('6-.NA')
 # head(naDATA)
@@ -355,30 +355,27 @@ plot(l.shp.data,lwd=2,col='tomato')
 # 
 # 
 # summary(dtf)
+
+lause <- read.csv('/Volumes/Data/PhD/Datas/LandUse.CH/AS_Wlz_ALL.csv',sep=',',header=T)
+lause <- data.frame('cxcyHA' = lause$RELI,
+'asWlz_85' = lause$asWlz_85,
+'as85' = lause$as_85,
+'asWlz_97' = lause$asWlz_97,
+'as97' = lause$as_97,
+'asWlz_09' = lause$asWlz,
+'as09' = lause$as)
+
+
+dtf.lause <- merge(dtf,lause,by='cscyHa',all.x=T)
+names(dtf.lause)
 # write.csv(dtf,'/Users/erey/Desktop/FRIbat_Alt_ok.csv')
 # write.csv(dtf,'FRIbat_db_20151110.csv',row.names=F)
+
 
 dim(dtf)
 names(dtf)
 
 
-# # listSp <- c('Chiroptera')
-
-# listSp <- c('Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus')
-
-# # 
-# listSp <- c('Barbastella barbastellus',
-            # 'Eptesicus nilssonii','Eptesicus serotinus',
-            # 'Myotis alcathoe','Myotis bechsteinii','Myotis brandtii',
-            # 'Myotis daubentonii','Myotis myotis','Myotis mystacinus','Myotis nattereri',
-            # 'Nyctalus leisleri','Nyctalus noctula',
-            # 'Pipistrellus kuhlii','Pipistrellus nathusii','Pipistrellus pipistrellus','Pipistrellus pygmaeus',
-            # 'Plecotus auritus','Plecotus austriacus',
-            # 'Miniopterus schreibersii',
-            # 'Rhinolophus hipposideros',
-            # 'Vespertilio murinus')
-# # 
-# listSp <- c('Myotis blythii','Rhinolophus ferrumequinum');listSp
 
 listSp <- c('Chiroptera',
 			'Pipistrellus','Nyctalus','Myotis','Plecotus','Eptesicus',
@@ -678,7 +675,7 @@ if(any(colnames=='6-.NA',na.rm=T)){
 p <- ggplot(dtf.seq, aes(x=dtf.seq$A.rcl, y=dtf.seq$Freq, fill=dtf.seq$Var1))
 pp <- p+geom_bar(stat="identity")+
 	theme_bw(base_size = 12, base_family = "Akkurat")+
-	scale_y_continuous(breaks=h50) +
+	scale_y_continuous(breaks=h10) +
 	scale_x_continuous(breaks=seq(floor(min(dtf.seq$A.rcl,na.rm=T)/5)*5,2015,by=5))+
     geom_hline(yintercept=h2,colour='grey80',size=.2,lintype='dashed')+
     geom_hline(yintercept=h10,colour='grey80',size=.2,lintype='dashed')+
