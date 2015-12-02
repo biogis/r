@@ -2,10 +2,9 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2015.11.17
-# last modified on 2015.12.01
+# last modified on 2015.12.02
 # source('/Volumes/Data/PhD/Script/R/brochure.r')
 # https://github.com/biogis/r/blob/master/brochure.r
-
 # Let the scipt work.
 
 #########################################################
@@ -400,7 +399,7 @@ for(sp in listSp){
   # sp <- listSp[1];sp
   # sp <- listSp[21];sp
   # sp <- listSp[8];sp
-  # sp <- listSp[10];sp
+  # sp <- listSp[14];sp
   print(sp)
 
 ###--Select for Chiroptera
@@ -425,7 +424,7 @@ for(sp in listSp){
   	}
 
 ###--Select for Gender
-  if(any(sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  if(!any(sp=='Chiroptera') & any(sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
   	spAbbr <- sp
   	pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/Genre',paste(sp,'data.pdf',sep='_'),sep='/')
   		batSp<-subset(dtf,dtf$Genre==sp);dim(batSp)
@@ -452,7 +451,14 @@ for(sp in listSp){
   	  				  toupper(strsplit(spName,split='')[[1]][1]),strsplit(spName,split='')[[1]][2],strsplit(spName,split='')[[1]][3],sep='')
       pdfName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/sp',paste(spAbbr,'data.pdf',sep='_'),sep='/')
       
-       ABmin <- min(batmorph$AB,na.rm=T)
+#Select dtf for species
+batSp<-subset(dtf,dtf$SP==sp);dim(batSp)
+bat.outer.sp <- subset(bat.outer,bat.outer@data$ESPECE==sp) 
+if(any(l.shp.data@data$ESPECE ==sp)){l.shp.data.sp <-  subset(l.shp.data,l.shp.data@data$ESPECE==sp)}
+batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
+batCH <- subset(dtf.ch, dtf.ch$ESPECE==sp);dim(batCH)
+
+  ABmin <- min(batmorph$AB,na.rm=T)
   ABmax <- max(batmorph$AB,na.rm=T)
   ABmedian <- median(batmorph$AB,na.rm=T)
   ABmean <- mean(batmorph$AB,na.rm=T)
@@ -467,14 +473,6 @@ for(sp in listSp){
 print(spAbbr)
 print(pdfName)
   
-#Select dtf for species
-batSp<-subset(dtf,dtf$SP==sp);dim(batSp)
-bat.outer.sp <- subset(bat.outer,bat.outer@data$ESPECE==sp) 
-if(any(l.shp.data@data$ESPECE ==sp)){l.shp.data.sp <-  subset(l.shp.data,l.shp.data@data$ESPECE==sp)}
-batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
-batCH <- subset(dtf.ch, dtf.ch$ESPECE==sp);dim(batCH)
-
-
 names(batSp);dim(batSp)
 names(batmorph);dim(batmorph)
   
@@ -488,7 +486,7 @@ names(batmorph);dim(batmorph)
 
 
   
-  dtf.fc<-subset(batSp,batSp$TYP_COL=='FC');dim(dtf.fc)
+  dtf.fc<-subset(batSp,batSp$TYP_COL=='FC' & batSp$A>=2010);dim(dtf.fc)
   table(dtf.fc$cxcykm)
   
   
@@ -545,7 +543,12 @@ names(batmorph);dim(batmorph)
   plot(bat.outer.sp,add=T,col='steelblue')
   head(batSp);tail(batSp)
   bat.shp
-  
+
+
+########  ########  ########  ########  ########  
+# Plot all data in a pdf
+########  ########  ########  ########  ########  
+
   pdf(pdfName,family='Akkurat',paper='a4r',width=11,height=8.5)
 #   pdf('testrplot.pdf',paper='a4r',width=11,height=8.5)
 
@@ -589,27 +592,25 @@ names(batmorph);dim(batmorph)
   
   AProp <- floor(A/sum(A)*100)
   AName <- paste(A,paste(AProp,'%',sep=' '),sep='-');AName
-  plot(A,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
-  #   plot(dtf.seq$A.rcl,dtf.seq$Freq,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
-  #   text(dtf.seq$A.rcl,dtf.seq$Freq+1, labels = MName,col='grey20',cex=0.8)
+  # plot(A,bty='n',axes=F,ann=F,lwd=5,type='h',col='tomato')
   
-  mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
-  box(col="grey")
+  # mtext("Nbre de données", side=2, line=3,cex=1.2,col="grey30")
+  # box(col="grey")
   
-  if(!any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
-  	axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
-  # axis for RhiFer and MyoBly: 
-  if(any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
-  	axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
+  # if(!any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
+  	# axis(1,at=seq(floor(min(batSp$A,na.rm=T)/5)*5,2015,by=5),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
+  # # axis for RhiFer and MyoBly: 
+  # if(any(sp=='Myotis blythii' | sp=='Rhinolophus ferrumequinum')){
+  	# axis(1,at=min(batSp$A,na.rm=T),cex.axis=1,col.axis='grey30',col='grey30',las=2)}
 
 
-  axis(2,cex.axis=1,col.axis='grey30',col='grey30')
-  axis(4,cex.axis=1,col.axis='grey30',col='grey30')
-# mtext(sp,side=3,line=3,col='grey10')
-  mtext("Années", side=3, line=3,cex=1.2,col="grey30")
-  mtext(paste('Données la plus ancienne:',oldData,'--',
-              'Données la plus récente:',lastData,sep=' '),
-        side=3, line=1,col='grey30')
+  # axis(2,cex.axis=1,col.axis='grey30',col='grey30')
+  # axis(4,cex.axis=1,col.axis='grey30',col='grey30')
+# # mtext(sp,side=3,line=3,col='grey10')
+  # mtext("Années", side=3, line=3,cex=1.2,col="grey30")
+  # mtext(paste('Données la plus ancienne:',oldData,'--',
+              # 'Données la plus récente:',lastData,sep=' '),
+        # side=3, line=1,col='grey30')
   
   if(!any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
   h2 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=2)
@@ -621,6 +622,7 @@ names(batmorph);dim(batmorph)
   }
 
   if(any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  h2 <- 0
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
   abline(h=h10,lty=1,lwd=0.7)
   h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
@@ -629,9 +631,73 @@ names(batmorph);dim(batmorph)
 
   # text(min(batSp$A,na.rm=T),max(A)-(max(A/2)), paste(capture.output(dtf.resum.site), collapse='\n'), pos=4,cex=1)
   # mtext(sp,side=3,line=3,col='grey10')
+
   csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_Year','.csv',sep='')
   write.csv(dtf.seq[,2:3],csvName,row.names=F)
   
+    
+  #######
+  #Type Year vs. Obs
+  #######
+
+  
+  Y.obs <- table(batSp$obs.rcl,batSp$A);Y.obs
+  
+  colnames <- unique(as.factor(as.data.frame(Y.obs)$Var2));print(colnames)
+  colCode <- c()
+  if(any(colnames=='1-.Acoustique',na.rm=T)){
+  col <- 'steelblue'
+  colCode <- c(colCode, col)}
+  if(any(colnames=='2-.Captures',na.rm=T)){
+  col <- 'turquoise'
+  colCode <- c(colCode, col)}
+if(any(colnames=='3-.R-tracking',na.rm=T)){
+  col <- 'lightskyblue'
+  colCode <- c(colCode, col)}
+if(any(colnames=='4-.Gites',na.rm=T)){
+  col <- 'limegreen'
+  colCode <- c(colCode, col)}
+if(any(colnames=='5-.Museum',na.rm=T)){
+  col <- 'gold'
+  colCode <- c(colCode, col)}
+if(any(colnames=='6-.NA',na.rm=T)){
+  col <- 'tomato'
+  colCode <- c(colCode, col)}
+  print(colCode)
+
+  
+  minA <- min(batSp$A,na.rm=T)
+  maxA <- max(batSp$A,na.rm=T)
+  A.seq <- data.frame('A.rcl' = as.factor(seq(minA,maxA,by=1)))
+  A.dat <- as.data.frame(Y.obs)
+  dtf.seq <- merge(A.dat,A.seq,by.x='Var2',by.y='A.rcl',all=T)
+  dtf.seq$A.rcl <- as.numeric(as.character(dtf.seq$Var2))
+  dtf.seq <- dtf.seq[ order(dtf.seq[,4]),]
+
+
+p <- ggplot(dtf.seq, aes(x=dtf.seq$A.rcl, y=dtf.seq$Freq, fill=dtf.seq$Var1))
+pp <- p+geom_bar(stat="identity")+
+	theme_bw(base_size = 12, base_family = "Akkurat")+
+	scale_y_continuous(breaks=h50) +
+	scale_x_continuous(breaks=seq(floor(min(dtf.seq$A.rcl,na.rm=T)/5)*5,2015,by=5))+
+    geom_hline(yintercept=h2,colour='grey80',size=.2,lintype='dashed')+
+    geom_hline(yintercept=h10,colour='grey80',size=.2,lintype='dashed')+
+	theme(axis.text.x=element_text(colour='black',angle=30,hjust=1,vjust=1),
+        axis.title.x=element_blank())+
+	theme(axis.title.y=element_blank())+
+	scale_fill_manual(values=c("steelblue","turquoise","lightskyblue","limegreen","gold","tomato"))+
+	guides(fill=guide_legend(title=NULL))+
+	theme(legend.position=c(0.1,0.85)) +
+	theme(legend.background=element_blank()) + 
+	theme(legend.key=element_blank())+
+	ggtitle(paste("Années",paste('Données la plus ancienne:',oldData,'--','Données la plus récente:',lastData,sep=' '),sep='\n'))
+
+print(pp)
+
+
+csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_Year_vs_TYPObs','.csv',sep='')
+write.csv(dtf.seq[,2:4],csvName,row.names=F)
+
   
   #######
   #Type Mois
@@ -774,8 +840,8 @@ if(any(colnames=='6-.NA',na.rm=T)){
   # axis(2,cex.axis=1,col.axis='grey30',col='grey30')
   # mtext(sp,side=3, line=3,col='grey10')
   
-csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_TYPObs_vs_Year','.csv',sep='')
-write.csv(Y.obs,csvName,row.names=F)
+# csvName <- paste('/Users/erey/Dropbox/Brochure FRIbat/Cartes/csv/',spAbbr,'_Data_TYPObs_vs_Year','.csv',sep='')
+# write.csv(Y.obs,csvName,row.names=F)
 
   
   #######
