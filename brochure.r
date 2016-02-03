@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2015.11.17
-# last modified on 2015.12.01
+# last modified on 2016.02.03
 # source('/Volumes/Data/PhD/Script/R/brochure.r')
 # https://github.com/biogis/r/blob/master/brochure.r
 # Let the scipt work.
@@ -20,8 +20,10 @@ setwd('~/Desktop/CurrentJob/DataBase/')
 
 start <- Sys.time();start
 
-dtf <- read.csv('FRIbat_db_20151202.csv',header=T,sep=',')
+dtf <- read.csv('FRIbat_db_20160120.csv',header=T,sep=',')
+# dtf <- read.csv('FRIbat_db_20160120.csv',header=T,sep=';')
 names(dtf)
+# write.csv(dtf,'FRIbat_db_20160120.csv',row.names=F)
 dim(dtf)
 head(dtf)
 summary(dtf)
@@ -113,7 +115,7 @@ names(dtf)
 dim(dtf)
 
 
-ind <- which(dtf$Valid==7 | dtf$Kt=='VD')
+ind <- which(dtf$Valid==7 | dtf$Kt=='VD' | dtf$Kt=='NE' | dtf$Kt=='BE')
 dtf <- dtf[ -ind, ]
 dim(dtf)
 summary(dtf)
@@ -150,7 +152,24 @@ summary(dtf.km.gn)
 
 dtf.km <- merge(dtf.km.dt,merge(dtf.km.sp,dtf.km.gn,by='cxcykm',all=T),by='cxcykm',all=T)
 summary(dtf.km)
+apply(apply(dtf.km,2,is.na),2,sum)
+dtf.km$sp[is.na(dtf.km$sp)] <- 9999
+dtf.km$gn[is.na(dtf.km$gn)] <- 9999
+apply(apply(dtf.km,2,is.na),2,sum)
+
 write.csv(dtf.km,'cxcykm.dt.sp.gn.csv')
+cx.km <- floor(as.numeric(as.character(dtf.km$cxcykm))/1000);cx.km
+cy.km <- ((as.numeric(as.character(dtf.km$cxcykm))/1000)-cx.km)*1000;cy.km
+cx <- cx.km*1000+500
+cy <- cy.km*1000+500
+
+dtf.km <- cbind(dtf.km,cx,cy);summary(dtf.km)
+head(dtf.km)
+write.csv(dtf.km,'cxcykm.sp.gn.csv',row.names=F)
+
+
+
+
 
 # 
 # dtf <- read.csv('FRIbat_db_20151123.csv',header=T,sep=';')
@@ -161,16 +180,21 @@ write.csv(dtf.km,'cxcykm.dt.sp.gn.csv')
 # names(dtf)
 # write.csv(dtf,'FRIbat_DB_Morpho_20151110.csv',row.names=F)
 
-morphTot <- read.csv('FRIbat_DB_Morpho_20151110.csv',header=T,sep=',')
-morphAlive <- read.csv('FRIbat_DB_Morpho_20151120.csv',header=T,sep=',')
+# morphTot <- read.csv('FRIbat_DB_Morpho_20151110.csv',header=T,sep=',')
+morphAlive <- read.csv('FRIbat_DB_Morpho_20160120.csv',header=T,sep=',')
+# morphAlive <- read.csv('FRIbat_DB_Morpho_20160120.csv',header=T,sep=';')
 names(morphAlive)
+# write.csv(morphAlive,'FRIbat_DB_Morpho_20160120.csv',row.names=F)
 
 index <- which(morphAlive $Age=='A')
 morph <- morphAlive[index,];dim(morph)
 
 
-dtf.ch <- read.csv('ReyE_5x5_chiros_CH_20151125.csv',header=T,sep=',')
-names(dtf.ch)
+dtf.ch <- read.csv('ReyE_5x5_chiros_CH_20160103.csv',header=T,sep=',')
+names(dtf.ch);dim(dtf.ch)
+# index <- which(is.na(dtf.ch$MAXA))
+# dtf.ch <- dtf.ch[-index,];dim(dtf.ch)
+# dtf.ch<-subset(dtf.ch,dtf.ch$MAXA>=1988);dim(dtf.ch.new)
 # write.csv(dtf.ch,'ReyE_5x5_chiros_CH_20151125.csv',row.names=F)
 
 
@@ -204,6 +228,11 @@ water <- readShapeSpatial(fn)
 proj4string(water) <- CRS(proj)
 shp.ext <-  water@bbox 
 plot(water,add=T)
+
+# fn.dem2 <- file.path('/Volumes/Bat/GISDataBase/DEM/swissALTI3D_LV03LN021.tif')
+# dem2 <- raster(fn.dem2);dem2
+# projection(dem2) <- proj
+# dem2
 
 fn.srtm <- file.path('/Volumes/Data/GIS/ElevationMap/DEMSRTM_lv03.tif')
 dem <- raster(fn.srtm);dem
@@ -310,18 +339,18 @@ plot(l.shp.data,lwd=2,col='tomato')
 
 #####
 #Reprises FRIbat
-begin.coord <- data.frame(cx=c(627835,529040,564250,568620,570120,570120,540060,579440,529930,564250,585080,585080,564800,568624,578000,564250,552725,542825,573750,514750,564250,565340,564250,564250,564250,565875,565875,564250,564250,564250,529930),
-cy=c(128950,198160,144300,151980,149350,149350,198160,183750,183160,144300,163520,163520,171650,152041,183500,144300,199561,199025,167175,145500,144300,143081,144300,144300,144300,144263,144263,144300,144300,144300,183160))
+begin.coord <- data.frame(cx=c(627835,529040,564250,568620,570120,570120,540060,579440,529930,564250,585080,585080,564800,568624,578000,564250,552725,542825,573750,514750,564250,565340,564250,564250,564250,565875,565875,564250,564250,564250,529930,565950,551080,551080),
+cy=c(128950,198160,144300,151980,149350,149350,198160,183750,183160,144300,163520,163520,171650,152041,183500,144300,199561,199025,167175,145500,144300,143081,144300,144300,144300,144263,144263,144300,144300,144300,183160,149020,201680,201680))
 
-end.coord <- data.frame(cx=c(573750,556142,568624,564250,569600,569500,579440,533753,553175,573750,572480,573750,573750,573750,572480,572480,556200,572480,570500,551850,565340,564250,565875,565875,565875,564250,564250,555200,554700,556600,565130),
-cy=c(167175,184969,152041,144300,148750,148800,183750,195612,187925,167175,185700,167175,167175,167175,185700,185700,186200,185700,151900,186700,143081,144300,144263,144263,144263,144300,144300,152400,151200,158400,185280))
+end.coord <- data.frame(cx=c(573750,556142,568624,564250,569600,569500,579440,533753,553175,573750,572480,573750,573750,573750,572480,572480,556200,572480,570500,551850,565340,564250,565875,565875,565875,564250,564250,555200,554700,556600,565130,572480,555000,554700),
+cy=c(167175,184969,152041,144300,148750,148800,183750,195612,187925,167175,185700,167175,167175,167175,185700,185700,186200,185700,151900,186700,143081,144300,144263,144263,144263,144300,144300,152400,151200,158400,185280,185700,189000,188775))
 
-dt <- data.frame('ESPECE' = c('Myotis blythii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Nyctalus noctula','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Pipistrellus pipistrellus'),
-'label'=c('065M','F2-845','M124','M124','M184','M186','R340','R340','Z202','015F','034J','044J','455J','456J','457J','525M','608I','659I','953I','219L','J112','J344','J435','J867','P616','P616','T127','T183','U932','V520','C3-612'),
-'YCap'=c(1998,2014,1989,2000,1989,1989,1992,1994,2007,1991,1992,1992,1999,2000,2001,2001,1991,1992,1992,2006,1987,1989,1986,1997,1991,1998,1998,1998,2000,2001,2009),
-'MCap'=c(8,9,8,9,7,7,6,7,4,8,8,9,9,9,8,8,8,8,7,2,8,8,9,9,8,9,9,8,9,8,7),
-'YRecap'=c(2009,2015,1993,2000,1993,1993,1994,1996,2007,2002,2002,2002,2002,2006,2007,2008,1991,2001,1992,2006,1989,1991,1987,1998,1998,2009,1998,1998,2002,2005,2010),
-'MRecap'=c(6,7,9,9,7,7,7,8,5,8,6,8,8,6,6,6,9,6,9,5,8,10,8,9,9,8,9,8,6,8,6))
+dt <- data.frame('ESPECE' = c('Myotis blythii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis daubentonii','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Myotis myotis','Nyctalus noctula','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Plecotus auritus','Pipistrellus pipistrellus','Myotis myotis','Miniopterus schreibersii','Miniopterus schreibersii'),
+'label'=c('065M','F2-845','M124','M124','M184','M186','R340','R340','Z202','015F','034J','044J','455J','456J','457J','525M','608I','659I','953I','219L','J112','J344','J435','J867','P616','P616','T127','T183','U932','V520','C3-612','422J','XXXX','YYYY'),
+'YCap'=c(1998,2014,1989,2000,1989,1989,1992,1994,2007,1991,1992,1992,1999,2000,2001,2001,1991,1992,1992,2006,1987,1989,1986,1997,1991,1998,1998,1998,2000,2001,2009,1993,1957,1970),
+'MCap'=c(8,9,8,9,7,7,6,7,4,8,8,9,9,9,8,8,8,8,7,2,8,8,9,9,8,9,9,8,9,8,7,8,1,6),
+'YRecap'=c(2009,2015,1993,2000,1993,1993,1994,1996,2007,2002,2002,2002,2002,2006,2007,2008,1991,2001,1992,2006,1989,1991,1987,1998,1998,2009,1998,1998,2002,2005,2010,2008,1957,1970),
+'MRecap'=c(6,7,9,9,7,7,7,8,5,8,6,8,8,6,6,6,9,6,9,5,8,10,8,9,9,8,9,8,6,8,6,6,4,11))
 
 
 l <- vector("list", nrow(begin.coord))
@@ -334,42 +363,48 @@ l.shp <- SpatialLines(l)
 l.shp.data <- SpatialLinesDataFrame(l.shp,dt,match.ID=F)
 proj4string(l.shp.data) <- CRS(proj)
 plot(l.shp.data,lwd=2,col='tomato')
-#writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/Recap_FRIbat.shp')
+# writeSpatialShape(l.shp.data, '/Users/erey/Documents/GIS/PyGIS_SSD/Recap_FRIbat.shp')
 
 
+# lause <- read.csv('/Volumes/Data/PhD/Datas/LandUse.CH/AS_Wlz_ALL.csv',sep=',',header=T)
+# lause <- data.frame('cxcyHA' = lause$RELI,
+# 'asWlz_85' = lause$asWlz_85,
+# 'as85' = lause$as_85,
+# 'asWlz_97' = lause$asWlz_97,
+# 'as97' = lause$as_97,
+# 'asWlz_09' = lause$asWlz,
+# 'as09' = lause$as)
+# names(lause)
+# names(dtf)
 
+# dtf <- merge(dtf,lause,by='cxcyHA',all.x=T)
+# names(dtf)
+# summary(dtf)
+
+# names(dtf)
+# xy <- data.frame('cx' = dtf$cx,'cy' = dtf$cy)
 
 # datas.srtm <- extract(x=dem,y=xy);summary(datas.srtm)
+# datas.dem2 <- extract(x=dem2,y=xy);summary(datas.dem2)
 # dtf <- cbind(dtf,datas.srtm)
-# 
+# dtf <- cbind(dtf,datas.dem2)
+
 # dem <- setMinMax(dem)
 # minValue(dem)
 # maxValue(dem)
 # rcl <- data.frame(from=seq(50,4750,by=100),
-#                   to=seq(149,4849,by=100),
-#                   becomes=seq(100,4800,by=100))
+                  # to=seq(149,4849,by=100),
+                  # becomes=seq(100,4800,by=100))
 # dem.rcl100 <- reclassify(dem,as.matrix(rcl));dem.rcl100
 # datas.rcl100 <- extract(x=dem.rcl100,y=xy);summary(datas.rcl100)
-# 
+
 # dtf <- cbind(dtf,datas.rcl100)
-# 
-# 
+
+
 # summary(dtf)
 
-lause <- read.csv('/Volumes/Data/PhD/Datas/LandUse.CH/AS_Wlz_ALL.csv',sep=',',header=T)
-lause <- data.frame('cxcyHA' = lause$RELI,
-'asWlz_85' = lause$asWlz_85,
-'as85' = lause$as_85,
-'asWlz_97' = lause$asWlz_97,
-'as97' = lause$as_97,
-'asWlz_09' = lause$asWlz,
-'as09' = lause$as)
-
-
-dtf.lause <- merge(dtf,lause,by='cscyHa',all.x=T)
-names(dtf.lause)
 # write.csv(dtf,'/Users/erey/Desktop/FRIbat_Alt_ok.csv')
-# write.csv(dtf,'FRIbat_db_20151110.csv',row.names=F)
+# write.csv(dtf,'FRIbat_db_20151204.Alt.csv',row.names=F)
 
 
 dim(dtf)
@@ -395,8 +430,9 @@ listSp <- c('Chiroptera',
 for(sp in listSp){
   # sp <- listSp[1];sp
   # sp <- listSp[21];sp
-  # sp <- listSp[8];sp
+  # sp <- listSp[7];sp
   # sp <- listSp[14];sp
+  # sp <- listSp[26];sp
   print(sp)
 
 ###--Select for Chiroptera
@@ -408,6 +444,7 @@ for(sp in listSp){
   	batmorph <- morph
   	batCH <- dtf.ch
 
+  PropData <- NA
   ABmin <- NA
   ABmax <- NA
   ABmedian <- NA
@@ -428,7 +465,8 @@ for(sp in listSp){
 	bat.outer.sp <- subset(bat.outer,bat.outer@data$Genre==sp)
 	batmorph <- subset(morph,morph$Genre==sp);dim(batmorph)
 	batCH <- subset(dtf.ch, dtf.ch$Genre==sp);dim(batCH)
-
+  
+  PropData <- NA
   ABmin <- NA
   ABmax <- NA
   ABmedian <- NA
@@ -455,6 +493,7 @@ if(any(l.shp.data@data$ESPECE ==sp)){l.shp.data.sp <-  subset(l.shp.data,l.shp.d
 batmorph <- subset(morph,morph$SP==sp);dim(batmorph)
 batCH <- subset(dtf.ch, dtf.ch$ESPECE==sp);dim(batCH)
 
+  PropData <- (dim(batSp)[1]/5903)*100
   ABmin <- min(batmorph$AB,na.rm=T)
   ABmax <- max(batmorph$AB,na.rm=T)
   ABmedian <- median(batmorph$AB,na.rm=T)
@@ -483,7 +522,7 @@ names(batmorph);dim(batmorph)
 
 
   
-  dtf.fc<-subset(batSp,batSp$TYP_COL=='FC' & batSp$A>=2010);dim(dtf.fc)
+  dtf.fc<-subset(batSp,batSp$TYP_COL=='FC' & as.numeric(batSp$A)>=2010);dim(dtf.fc)
   table(dtf.fc$cxcykm)
   
   
@@ -501,6 +540,7 @@ names(batmorph);dim(batmorph)
  
    
   dtf.resum.site <- t(data.frame('nbre données' = nData,
+  								'Proportion données' =   PropData,
                                  'ancienne donnée' = oldData,
                                  'donnée récente' = lastData,
                                  'nbre km2' = nSQkm,
@@ -549,9 +589,12 @@ names(batmorph);dim(batmorph)
   pdf(pdfName,family='Akkurat',paper='a4r',width=11,height=8.5)
 #   pdf('testrplot.pdf',paper='a4r',width=11,height=8.5)
 
-	plot(ch,main=sp)
-	plot(batCH.shp,add=T,pch=15,col='grey35',cex=0.8)
+plot(ch)
+# 	plot(batCH.shp,add=T,pch=15,col='grey35',cex=0.8)
+plot(batCH.shp[batCH.shp@data$MAXA<=1987,],add=TRUE,col='grey65',pch=15,cex=0.8)
+plot(batCH.shp[batCH.shp@data$MAXA>1987,],add=TRUE,col='grey35',pch=15,cex=0.8)
   
+
   plot(dem,col=grey(0:255 / 255),ext=extent,alpha=0.4,xlab='Coord X', ylab='Coord Y',legend=F,main=sp)
   plot(dem.fr,add=T,col=BrBG(255),alpha=0.6,legend=F)
   plot(river,add=T,col='royalblue4')
@@ -609,20 +652,27 @@ names(batmorph);dim(batmorph)
               # 'Données la plus récente:',lastData,sep=' '),
         # side=3, line=1,col='grey30')
   
-  if(!any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
+  if(!any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus' | sp=='Vespertilio murinus' | sp=='Myotis daubentonii' | sp=='Nyctalus noctula' | sp=='Pipistrellus pipistrellus')){
   h2 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=2)
-  abline(h=h2,lty=2,lwd=0.5)
+  # abline(h=h2,lty=2,lwd=0.5)
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
-  abline(h=h10,lty=1,lwd=0.7)
+  # abline(h=h10,lty=1,lwd=0.7)
   h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
-  abline(h=h50,lty=1,lwd=1)
+  # abline(h=h50,lty=1,lwd=1)
   }
 
-  if(any(sp=='Chiroptera' | sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus')){
-  h2 <- 0
+  if(any(sp=='Pipistrellus' | sp=='Nyctalus' | sp=='Myotis' | sp=='Plecotus' | sp=='Eptesicus' | sp=='Myotis daubentonii' | sp=='Nyctalus noctula' | sp=='Pipistrellus pipistrellus')){
+  h2 <- NA
   h10 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=10)
-  abline(h=h10,lty=1,lwd=0.7)
+  # abline(h=h10,lty=1,lwd=0.7)
   h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
+  # abline(h=h50,lty=1,lwd=1)
+  }
+
+  if(any(sp=='Chiroptera' | sp=='Vespertilio murinus')){
+  h50 <- seq(0,max(dtf.seq$Freq,na.rm=T),by=50)
+  h2 <- NA
+  h10 <- NA
   abline(h=h50,lty=1,lwd=1)
   }
 
@@ -638,7 +688,7 @@ names(batmorph);dim(batmorph)
   #######
 
   
-  Y.obs <- table(batSp$obs.rcl,batSp$A);Y.obs
+  Y.obs <- table(batSp$A,batSp$obs.rcl);Y.obs
   
   colnames <- unique(as.factor(as.data.frame(Y.obs)$Var2));print(colnames)
   colCode <- c()
@@ -667,18 +717,23 @@ if(any(colnames=='6-.NA',na.rm=T)){
   maxA <- max(batSp$A,na.rm=T)
   A.seq <- data.frame('A.rcl' = as.factor(seq(minA,maxA,by=1)))
   A.dat <- as.data.frame(Y.obs)
-  dtf.seq <- merge(A.dat,A.seq,by.x='Var2',by.y='A.rcl',all=T)
-  dtf.seq$A.rcl <- as.numeric(as.character(dtf.seq$Var2))
+  dtf.seq <- merge(A.dat,A.seq,by.x='Var1',by.y='A.rcl',all=T)
+  dtf.seq$A.rcl <- as.numeric(as.character(dtf.seq$Var1))
   dtf.seq <- dtf.seq[ order(dtf.seq[,4]),]
 
+  if(any(is.na(h2))){hLim <- h10}
+  if(!any(is.na(h2))){hLim <- h2}
+  if(any(is.na(h2)) & any(is.na(h10))){hLim <- h50}
+ print(hLim)
 
-p <- ggplot(dtf.seq, aes(x=dtf.seq$A.rcl, y=dtf.seq$Freq, fill=dtf.seq$Var1))
+p <- ggplot(dtf.seq, aes(x=dtf.seq$A.rcl, y=dtf.seq$Freq, fill=dtf.seq$Var2))
 pp <- p+geom_bar(stat="identity")+
 	theme_bw(base_size = 12, base_family = "Akkurat")+
-	scale_y_continuous(breaks=h10) +
+	scale_y_continuous(breaks= hLim) +
 	scale_x_continuous(breaks=seq(floor(min(dtf.seq$A.rcl,na.rm=T)/5)*5,2015,by=5))+
     geom_hline(yintercept=h2,colour='grey80',size=.2,lintype='dashed')+
     geom_hline(yintercept=h10,colour='grey80',size=.2,lintype='dashed')+
+    geom_hline(yintercept=h50,colour='grey80',size=.2,lintype='dashed')+
 	theme(axis.text.x=element_text(colour='black',angle=30,hjust=1,vjust=1),
         axis.title.x=element_blank())+
 	theme(axis.title.y=element_blank())+
