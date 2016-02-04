@@ -171,6 +171,7 @@ axis(4,cex.axis=0.8,las=2)
 par(new=T)
 plot(dtf.plml11$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
+points(dtf.pu11$SatIndexPU.F, cex=0.2,  col= 'grey15', type='l', pch=16)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Middle area 900 m asl - Grassland', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
@@ -185,6 +186,7 @@ mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 par(new=T)
 plot(dtf.plml12$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
+points(dtf.pu12$SatIndexPU.F, cex=0.2, col='grey15', type='l', pch=16)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
@@ -225,22 +227,24 @@ plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2)
 points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+points(dtf.plml11$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
 points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
 
 
 
 plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(2,cex.axis=0.8,las=2)
 points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
 points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 
-dev.off()
-embed_fonts(pdfname,outfile=pdfname)
+# dev.off()
+# embed_fonts(pdfname,outfile=pdfname)
 
 
 
@@ -256,18 +260,19 @@ embed_fonts(pdfname,outfile=pdfname)
 ####################################################################################################
 
 
-# dtf.et <- read.csv('ML.PL.PU.VG.VNG.ALP.D.csv',sep=',',header=T);names(dtf.et)
-dtf.et <- read.csv('ETa.D.csv',sep=';',header=T);names(dtf.et)
+dtf.et <- read.csv('ML.PL.PU.VG.VNG.ALP.D.csv',sep=',',header=T);names(dtf.et)
+# dtf.et <- read.csv('ETa.D.csv',sep=';',header=T);names(dtf.et)
+# write.csv(dtf.et,'ML.PL.PU.VG.VNG.ALP.D.csv',row.names=F)
 
 if(any(file.exists('D:/'))){pdfname <- 'D:/erey/Dropbox/ET.pdf'}
 if(any(file.exists('/users'))){pdfname <- '/Users/erey/Dropbox/ET.pdf'}
 
 index <- which(dtf.et$Y==2011)
-# dtf.et11 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et11)
-dtf.et11 <- dtf.et[index,];names(dtf.et11)
+dtf.et11 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et11)
+#dtf.et11 <- dtf.et[index,];names(dtf.et11)
 index <- which(dtf.et$Y==2012)
-# dtf.et12 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et12)
-dtf.et12 <- dtf.et[index,];names(dtf.et12)
+dtf.et12 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et12)
+#dtf.et12 <- dtf.et[index,];names(dtf.et12)
 head(dtf.et11)
 head(dtf.et12)
 
@@ -302,10 +307,19 @@ ETa.vg.12[2],ETa.vng.12[2],ETp.ec4.12[2])
 
 ylm <- floor(max(dt,na.rm=T)/10+1)*10
 
+dET.pl.11 <- ETa.pl.11-ETp.ec7.11
+dET.pl.11[1] <- c(1:12)
+dET.ml.11 <- ETa.ml.11-ETp.ec7.11
+dET.ml.11[1] <- c(1:12)
+dET.pl.12 <- ETa.pl.12-ETp.ec7.12
+dET.pl.12[1] <- c(1:12)
+dET.ml.12 <- ETa.ml.12-ETp.ec7.12
+dET.ml.12[1] <- c(1:12)
 
 
-pdf(pdfname,family=ft,paper='a4',width=8.5,height=11)
-par(mfrow=c(4,2),mar=c(5,4,4,5))
+
+# pdf(pdfname,family=ft,paper='a4',width=8.5,height=11)
+# par(mfrow=c(4,2),mar=c(5,4,4,5))
 
 
 ###################
@@ -421,21 +435,21 @@ points(ETa.vng.12,col='grey15',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-
-dev.off()
-embed_fonts(pdfname,outfile=pdfname)
-
-
-
-if(any(file.exists('D:/'))){pdfname <- 'D:/erey/Dropbox/SoiMoiET.pdf'}
-if(any(file.exists('/users'))){pdfname <- '/Users/erey/Dropbox/SoiMoiET.pdf'}
-
-
-
-ifelse(any(fonts()=='Akkurat'),ft <- 'Akkurat',ft <- 'Arial');print(ft)
-
-pdf(pdfname,family=ft,paper='a4',width=8.5,height=11)
-par(mfrow=c(4,2),mar=c(5,4,4,5))
+# 
+# dev.off()
+# embed_fonts(pdfname,outfile=pdfname)
+# 
+# 
+# 
+# if(any(file.exists('D:/'))){pdfname <- 'D:/erey/Dropbox/SoiMoiET.pdf'}
+# if(any(file.exists('/users'))){pdfname <- '/Users/erey/Dropbox/SoiMoiET.pdf'}
+# 
+# 
+# 
+# ifelse(any(fonts()=='Akkurat'),ft <- 'Akkurat',ft <- 'Arial');print(ft)
+# 
+# pdf(pdfname,family=ft,paper='a4',width=8.5,height=11)
+# par(mfrow=c(4,2),mar=c(5,4,4,5))
 
 ###################
 #Alpage
@@ -560,10 +574,13 @@ plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2)
 points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+points(dtf.plml11$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
 points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey15'))
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
+
 
 
 
@@ -713,11 +730,12 @@ mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(2,cex.axis=0.8,las=2)
 points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
 points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
 
 
 
