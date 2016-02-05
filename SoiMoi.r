@@ -12,6 +12,24 @@ try(setwd('D:/erey/CloudStation/R/SoilPaper'),silent=T)
 ####################################################################################################
 ####################################################################################################
 
+soil <- read.csv('Soil.csv',sep=';',header=T);names(soil)
+head(soil)
+
+lause <- unique(soil$LandUse)
+depth <- unique(soil$Depth)
+
+result <- read.csv(text='lulc,depth,fc')
+
+for(lu in lause){
+  for(dpth in depth){print(lu)
+    print(dpth)
+    index <- which(soil$LandUse==lu & soil$Depth==dpth)
+    fcCalc <- median(soil[index,7],na.rm=T)
+    print(fcCalc)
+    dtf.fc <- data.frame(lu,dpth,fcCalc)
+    result <- rbind(result,dtf.fc)}}
+print(result)
+
 
 listFile <- c( "ec1.PU.D.csv","ec2.Alp.D.csv","ec4.VG.VNG.D.csv","ec7.PL.ML.D.csv")
 
@@ -136,13 +154,13 @@ par(mfrow=c(4,2),mar=c(5,4,4,5))
 
 ###################
 #Alpage
-plot(dtf.alp11$ec2.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.alp11$ec2.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('2011', side=3, line=2,cex=1)
 
 
 par(new=T)
-plot(dtf.alp11$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey75', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.alp11$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey5', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Upper area 2200 m asl - Alpine pasture', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
@@ -150,14 +168,14 @@ axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O'
 axis(2,cex.axis=0.8,las=2)
 
 
-plot(dtf.alp12$ec2.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8,main='2012')
+plot(dtf.alp12$ec2.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8,main='2012')
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 mtext('2012', side=3, line=2,cex=1)
 
 
 par(new=T)
-plot(dtf.alp12$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey75', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.alp12$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey5', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
@@ -165,28 +183,28 @@ axis(2,cex.axis=0.8,las=2)
 
 ###################
 #Pasture
-plot(dtf.plml11$ec7.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.plml11$ec7.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 
+
+
 par(new=T)
-plot(dtf.plml11$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
-points(dtf.pu11$SatIndexPU.F, cex=0.2,  col= 'grey15', type='l', pch=16)
+plot(dtf.plml11$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'limegreen', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.plml11$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Middle area 900 m asl - Grassland', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('grey45','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('forestgreen','limegreen'))
 
-plot(dtf.plml12$ec7.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.plml12$ec7.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 par(new=T)
-plot(dtf.plml12$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
-points(dtf.pu12$SatIndexPU.F, cex=0.2, col='grey15', type='l', pch=16)
+plot(dtf.plml12$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'limegreen', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
@@ -194,27 +212,27 @@ axis(2,cex.axis=0.8,las=2)
 
 ###################
 #Vineyards
-plot(dtf.wine11$ec4.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.wine11$ec4.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 
 par(new=T)
-plot(dtf.wine11$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'grey65', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.wine11$SatIndexVNG.F, cex=0.2, col='grey15', type='l', pch=16)
+plot(dtf.wine11$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'red', type='l',lty=3, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.wine11$SatIndexVNG.F, cex=0.5, col='darkred',lty=2, type='l', pch=16)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Lower area 700 m asl - Vineyards', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('grey15','grey65'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('darkred','red'))
 
 
-plot(dtf.wine12$ec4.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.wine12$ec4.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 par(new=T)
-plot(dtf.wine12$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'grey65', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.wine12$SatIndexVNG.F, cex=0.2, col='grey15', type='l', pch=16)
+plot(dtf.wine12$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'red',lty=3, type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.wine12$SatIndexVNG.F, cex=0.2, col='darkred',lty=2, type='l', pch=16)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
@@ -223,23 +241,23 @@ axis(2,cex.axis=0.8,las=2)
 ###################
 #3 systems
 
-plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'darkred', type='l',lty=2, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2)
-points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
-points(dtf.plml11$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
-points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
+points(dtf.plml11$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16,lty=1)
+points(dtf.plml11$SatIndexPL.F, cex=0.2, col='limegreen', type='l', pch=16,lty=1)
+points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey5', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey5','forestgreen','limegreen','darkred'))
 
 
 
-plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'darkred', type='l',lty=2, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(2,cex.axis=0.8,las=2)
-points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
-points(dtf.plml12$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
-points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexPL.F, cex=0.2, col='limegreen', type='l', pch=16,lty=1)
+points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey5', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 
@@ -262,10 +280,32 @@ axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O'
 
 dtf.et <- read.csv('ML.PL.PU.VG.VNG.ALP.D.csv',sep=',',header=T);names(dtf.et)
 # dtf.et <- read.csv('ETa.D.csv',sep=';',header=T);names(dtf.et)
-# write.csv(dtf.et,'ML.PL.PU.VG.VNG.ALP.D.csv',row.names=F)
+#write.csv(dtf.et,'ML.PL.PU.VG.VNG.ALP.D.csv',row.names=F)
+# 
+# 
+# dtf.et$ETaALP<-ifelse(dtf.et$ETaALP<dtf.et$ec2.ETp,dtf.et$ETaALP,dtf.et$ec2.ETp)
+# dtf.et$ETaPU<-ifelse(dtf.et$ETaPU<dtf.et$ec1.ETp,dtf.et$ETaPU,dtf.et$ec1.ETp)
+# dtf.et$ETaPL<-ifelse(dtf.et$ETaPL<dtf.et$ec7.ETp,dtf.et$ETaPL,dtf.et$ec7.ETp)
+# dtf.et$ETaML<-ifelse(dtf.et$ETaML<dtf.et$ec7.ETp,dtf.et$ETaML,dtf.et$ec7.ETp)
+# dtf.et$ETaVNG<-ifelse(dtf.et$ETaVNG<dtf.et$ec4.ETp,dtf.et$ETaVNG,dtf.et$ec4.ETp)
+# dtf.et$ETaVG<-ifelse(dtf.et$ETaVG<dtf.et$ec4.ETp,dtf.et$ETaVG,dtf.et$ec4.ETp)
 
-if(any(file.exists('D:/'))){pdfname <- 'D:/erey/Dropbox/ET.pdf'}
-if(any(file.exists('/users'))){pdfname <- '/Users/erey/Dropbox/ET.pdf'}
+# dtf.et$ETaALP<-ifelse(dtf.et$ETaALP<0,0,dtf.et$ETaALP)
+# dtf.et$ETaPU<-ifelse(dtf.et$ETaPU<0,0,dtf.et$ETaPU)
+# dtf.et$ETaPL<-ifelse(dtf.et$ETaPL<0,0,dtf.et$ETaPL)
+# dtf.et$ETaML<-ifelse(dtf.et$ETaML<0,0,dtf.et$ETaML)
+# dtf.et$ETaVNG<-ifelse(dtf.et$ETaVNG<0,0,dtf.et$ETaVNG)
+# dtf.et$ETaVG<-ifelse(dtf.et$ETaVG<0,0,dtf.et$ETaVG)
+
+# dtf.et$ETaALP<-ifelse(dtf.et$ec2.P>dtf.et$ec2.ETp,0,dtf.et$ETaALP)
+# dtf.et$ETaPU<-ifelse(dtf.et$ec1.P>dtf.et$ec1.ETp,0,dtf.et$ETaPU)
+# dtf.et$ETaPL<-ifelse(dtf.et$ec7.P>dtf.et$ec7.ETp,0,dtf.et$ETaPL)
+# dtf.et$ETaML<-ifelse(dtf.et$ec7.P>dtf.et$ec7.ETp,0,dtf.et$ETaML)
+# dtf.et$ETaVNG<-ifelse(dtf.et$ec4.P>dtf.et$ec4.ETp,0,dtf.et$ETaVNG)
+# dtf.et$ETaVG<-ifelse(dtf.et$ec4.P>dtf.et$ec4.ETp,0,dtf.et$ETaVG)
+
+# if(any(file.exists('D:/'))){pdfname <- 'D:/erey/Dropbox/ET.pdf'}
+# if(any(file.exists('/users'))){pdfname <- '/Users/erey/Dropbox/ET.pdf'}
 
 index <- which(dtf.et$Y==2011)
 dtf.et11 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et11)
@@ -275,6 +315,9 @@ dtf.et12 <- dtf.et[index,c(1:8,10,12,18,21,25,28,33,34,38,44,45)];names(dtf.et12
 #dtf.et12 <- dtf.et[index,];names(dtf.et12)
 head(dtf.et11)
 head(dtf.et12)
+
+
+
 
 ETa.alp.11 <- aggregate(dtf.et11$ETaALP~dtf.et11$M,data=dtf.et11,FUN="sum")
 ETp.ec2.11 <- aggregate(dtf.et11$ec2.ETp~dtf.et11$M,data=dtf.et11,FUN="sum")
@@ -299,11 +342,11 @@ ETa.vng.12 <- aggregate(dtf.et12$ETaVNG~dtf.et12$M,data=dtf.et12,FUN="sum")
 ETp.ec4.12 <- aggregate(dtf.et12$ec4.ETp~dtf.et12$M,data=dtf.et12,FUN="sum")
 
 dt <- data.frame(ETa.alp.11[2],ETp.ec2.11[2],
-ETa.alp.12[2],ETp.ec2.12[2],
-ETa.pl.11[2],ETa.ml.11[2],ETp.ec7.11[2],
-ETa.pl.12[2],ETa.ml.12[2],ETp.ec7.12[2],
-ETa.vg.11[2],ETa.vng.11[2],ETp.ec4.11[2],
-ETa.vg.12[2],ETa.vng.12[2],ETp.ec4.12[2])
+                 ETa.alp.12[2],ETp.ec2.12[2],
+                 ETa.pl.11[2],ETa.ml.11[2],ETp.ec7.11[2],
+                 ETa.pl.12[2],ETa.ml.12[2],ETp.ec7.12[2],
+                 ETa.vg.11[2],ETa.vng.11[2],ETp.ec4.11[2],
+                 ETa.vg.12[2],ETa.vng.12[2],ETp.ec4.12[2])
 
 ylm <- floor(max(dt,na.rm=T)/10+1)*10
 
@@ -325,28 +368,27 @@ dET.ml.12[1] <- c(1:12)
 ###################
 #Alpage
 
-plot(ETp.ec2.11,col='grey90',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec2.11,col='steelblue',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 
 
 par(new=T)
-plot(ETa.alp.11,col='grey75',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+plot(ETa.alp.11,col='grey5',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
 mtext('2011', side=3, line=2,cex=1)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-# legend('topleft', horiz=F,bty='n', cex=0.8, c('Potential Evapo-Transpiration', 'Actual Evapo-Transpiration - irrigated','Actual Evapo-Transpiration - not irrigated'), lty=0, text.col=c('grey15','grey75','grey45'))
 mtext('Upper area 2200 m asl - Alpine pasture', side=1, line=3,cex=0.8, at=-1, adj = 0)
 
 
-plot(ETp.ec2.12,col='grey90',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec2.12,col='steelblue',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(ETa.alp.12,col='grey75',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+plot(ETa.alp.12,col='grey5',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
 mtext('2012', side=3, line=2,cex=1)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
@@ -357,28 +399,28 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 ###################
 #Pasture
 
-plot(ETp.ec7.11,col='grey90',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec7.11,col='steelblue',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 
 
 par(new=T)
-plot(ETa.pl.11,col='grey15',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.ml.11,col='grey45',type='l',lwd=2)
+plot(ETa.pl.11,col='limegreen',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.ml.11,col='forestgreen',type='l',lwd=2)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-legend('topleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('grey45','grey15'))
+legend('topleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('forestgreen','limegreen'))
 mtext('Middle area 900 m asl - Grassland', side=1, line=3,cex=0.8, at=-1, adj = 0)
 
 
-plot(ETp.ec7.12,col='grey90',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec7.12,col='steelblue',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 par(new=T)
-plot(ETa.pl.12,col='grey15',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.ml.12,col='grey45',type='l',lwd=2)
+plot(ETa.pl.12,col='limegreen',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.ml.12,col='forestgreen',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -389,28 +431,28 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 ###################
 #Vineyards
 
-plot(ETp.ec4.11,col='grey90',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec4.11,col='steelblue',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 
 par(new=T)
-plot(ETa.vg.11,col='grey65',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.vng.11,col='grey15',type='l',lwd=2)
+plot(ETa.vg.11,col='red',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.vng.11,col='darkred',type='l',lwd=2)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-legend('topleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('grey15','grey65'))
+legend('topleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('darkred','red'))
 mtext('Lower area 700 m asl - Vineyards', side=1, line=3,cex=0.8, at=-1, adj = 0)
 
 
-plot(ETp.ec4.12,col='grey90',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec4.12,col='steelblue',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(ETa.vg.12,col='grey65',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.vng.12,col='grey15',type='l',lwd=2)
+plot(ETa.vg.12,col='red',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.vng.12,col='darkred',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -419,19 +461,19 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 ###################
 #3 systems
 
-plot(ETa.alp.11,col='grey75',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
-points(ETa.ml.11,col='grey45',type='l',lwd=2)
-points(ETa.vng.11,col='grey15',type='l',lwd=2)
+plot(ETa.alp.11,col='grey5',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+points(ETa.ml.11,col='forestgreen',type='l',lwd=2)
+points(ETa.vng.11,col='darkred',type='l',lwd=2)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-legend('topleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey15'))
+legend('topleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey5','forestgreen','darkred'))
 
 
-plot(ETa.alp.12,col='grey75',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
-points(ETa.ml.12,col='grey45',type='l',lwd=2)
-points(ETa.vng.12,col='grey15',type='l',lwd=2)
+plot(ETa.alp.12,col='grey5',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+points(ETa.ml.12,col='forestgreen',type='l',lwd=2)
+points(ETa.vng.12,col='darkred',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -455,13 +497,13 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 #Alpage
 #2011
 #Soil Moisture
-plot(dtf.alp11$ec2.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.alp11$ec2.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(dtf.alp11$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey75', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.alp11$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey5', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
@@ -473,19 +515,18 @@ mtext('Upper area 2200 m asl - Alpine pasture', side=1, line=3,cex=0.8, at=-60, 
 
 #####
 #ETa/ETp
-plot(ETp.ec2.11,col='grey90',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec2.11,col='steelblue',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(ETa.alp.11,col='grey75',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+plot(ETa.alp.11,col='grey5',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
 mtext('2011 - ET', side=3, line=2,cex=1)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
-# legend('topleft', horiz=F,bty='n', cex=0.8, c('Potential Evapo-Transpiration', 'Actual Evapo-Transpiration - irrigated','Actual Evapo-Transpiration - not irrigated'), lty=0, text.col=c('grey15','grey75','grey45'))
 
 
 
@@ -494,33 +535,33 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 #Pasture
 #2011
 #Soil Moisture
-plot(dtf.plml11$ec7.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.plml11$ec7.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(dtf.plml11$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
+plot(dtf.plml11$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'limegreen', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.plml11$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Middle area 900 m asl - Grassland', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('grey45','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('forestgreen','limegreen'))
 
 
 #####
 #ETa/ETp
-plot(ETp.ec7.11,col='grey90',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec7.11,col='steelblue',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 
 par(new=T)
-plot(ETa.pl.11,col='grey15',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.ml.11,col='grey45',type='l',lwd=2)
+plot(ETa.pl.11,col='limegreen',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.ml.11,col='forestgreen',type='l',lwd=2)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
@@ -532,32 +573,32 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 #Vineyards
 #2011
 #Soil Moisture
-plot(dtf.wine11$ec4.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.wine11$ec4.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(dtf.wine11$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'grey65', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.wine11$SatIndexVNG.F, cex=0.2, col='grey15', type='l', pch=16)
+plot(dtf.wine11$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'red',lty=3, type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.wine11$SatIndexVNG.F, cex=0.2, col='darkred',lty=2, type='l', pch=16)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Lower area 700 m asl - Vineyards', side=1, line=3,cex=0.8, at=-60, adj = 0)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('grey15','grey65'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('darkred','red'))
 
 
 #####
 #ETa/ETp
-plot(ETp.ec4.11,col='grey90',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec4.11,col='steelblue',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(ETa.vg.11,col='grey65',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.vng.11,col='grey15',type='l',lwd=2)
+plot(ETa.vg.11,col='red',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.vng.11,col='darkred',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -570,16 +611,16 @@ mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 #3 systems
 #2011
 #Soil Moisture
-plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.wine11$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'darkred', type='l',lty=2, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2)
-points(dtf.plml11$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
+points(dtf.plml11$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16,lty=1)
 points(dtf.plml11$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
-points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
+points(dtf.alp11$SatIndexALP.F, cex=0.2, col='grey5', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
-points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16,lty=1)
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey5','forestgreen','limegreen','darkred'))
 
 
 
@@ -587,9 +628,9 @@ legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - 
 
 #####
 #ETa/ETp
-plot(ETa.alp.11,col='grey75',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
-points(ETa.ml.11,col='grey45',type='l',lwd=2)
-points(ETa.vng.11,col='grey15',type='l',lwd=2)
+plot(ETa.alp.11,col='grey5',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+points(ETa.ml.11,col='forestgreen',type='l',lwd=2)
+points(ETa.vng.11,col='darkred',type='l',lwd=2)
 mtext('Actual evapotranspiration [mm]', side=2, line=3,cex=0.6)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
@@ -603,13 +644,13 @@ axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N
 #Alpage
 #2012
 #Soil Moisture
-plot(dtf.alp12$ec2.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8,main='2012')
+plot(dtf.alp12$ec2.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8,main='2012')
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(dtf.alp12$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey75', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.alp12$SatIndexALP.F, cex=0.2, ylim=c(0,1), col= 'grey5', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
@@ -621,13 +662,13 @@ mtext('Upper area 2200 m asl - Alpine pasture', side=1, line=3,cex=0.8, at=-1, a
 
 #####
 #ETa/ETp
-plot(ETp.ec2.12,col='grey90',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec2.12,col='steelblue',type='h',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 
 
 par(new=T)
-plot(ETa.alp.12,col='grey75',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+plot(ETa.alp.12,col='grey5',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -642,19 +683,19 @@ mtext('2012 - ET', side=3, line=2,cex=1)
 #Pasture
 #2012
 #Soil Moisture
-plot(dtf.plml12$ec7.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.plml12$ec7.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 par(new=T)
-plot(dtf.plml12$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16)
+plot(dtf.plml12$SatIndexPL.F, cex=0.2, ylim=c(0,1), col= 'limegreen', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Middle area 900 m asl - Grassland', side=1, line=3,cex=0.8, at=-60, adj = 0)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('grey45','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), lty=0, text.col=c('forestgreen','limegreen'))
 
 
 
@@ -662,12 +703,12 @@ legend('bottomleft', horiz=F,bty='n', cex=0.8, c('irrigated', 'not irrigated'), 
 
 #####
 #ETa/ETp
-plot(ETp.ec7.12,col='grey90',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec7.12,col='steelblue',type='h',lwd=3,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 
 par(new=T)
-plot(ETa.pl.12,col='grey15',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.ml.12,col='grey45',type='l',lwd=2)
+plot(ETa.pl.12,col='limegreen',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.ml.12,col='forestgreen',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -686,19 +727,19 @@ mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 #Vineyards
 #2012
 #Soil Moisture
-plot(dtf.wine12$ec4.P,cex=0.2,ylim=c(60,0),col='grey90',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
+plot(dtf.wine12$ec4.P,cex=0.2,ylim=c(60,0),col='steelblue',type='h',ann=F,axes=F,bty='n',cex.lab=0.8,cex.axis=0.8)
 axis(4,cex.axis=0.8,las=2)
 mtext('Precipitation [mm]', side=4, line=3,cex=0.6)
 
 par(new=T)
-plot(dtf.wine12$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'grey65', type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
-points(dtf.wine12$SatIndexVNG.F, cex=0.2, col='grey15', type='l', pch=16)
+plot(dtf.wine12$SatIndexVG.F, cex=0.2, ylim=c(0,1), col= 'red',lty=3, type='l', pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+points(dtf.wine12$SatIndexVNG.F, cex=0.2, col='darkred',lty=2, type='l', pch=16)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 axis(2,cex.axis=0.8,las=2)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
 mtext('Lower area 700 m asl - Vineyards', side=1, line=3,cex=0.8, at=-60, adj = 0)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('grey15','grey65'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetation'), lty=0, text.col = c('darkred','red'))
 
 
 
@@ -706,13 +747,13 @@ legend('bottomleft', horiz=F,bty='n', cex=0.8, c('no vegetation', 'with vegetati
 
 #####
 #ETa/ETp
-plot(ETp.ec4.12,col='grey90',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+plot(ETp.ec4.12,col='steelblue',type='h',lwd=4,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
 axis(4,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 
 
 par(new=T)
-plot(ETa.vg.12,col='grey65',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
-points(ETa.vng.12,col='grey15',type='l',lwd=2)
+plot(ETa.vg.12,col='red',type='l',lwd=2,ann=F,axes=F,ylim=c(-5,ylm))
+points(ETa.vng.12,col='darkred',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
@@ -727,24 +768,24 @@ mtext('potential evapotranspiration [mm]', side=4, line=3,cex=0.6)
 #3 systems
 #2012
 #Soil Moisture
-plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'grey15', type='l',lty=1, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
+plot(dtf.wine12$SatIndexVNG.F, cex=0.2, ylim=c(0,1), col= 'darkred', type='l',lty=2, pch=16,bty='n',cex.lab=0.8,cex.axis=0.8,axes=F,ann=F)
 axis(2,cex.axis=0.8,las=2)
-points(dtf.plml12$SatIndexML.F, cex=0.2, col='grey45', type='l', pch=16,lty=1)
-points(dtf.plml12$SatIndexPL.F, cex=0.2, col='grey25', type='l', pch=16,lty=1)
-points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey75', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexML.F, cex=0.2, col='forestgreen', type='l', pch=16,lty=1)
+points(dtf.plml12$SatIndexPL.F, cex=0.2, col='limegreen', type='l', pch=16,lty=1)
+points(dtf.alp12$SatIndexALP.F, cex=0.2, col='grey5', type='l', pch=16,lty=1)
 axis(1,at=axesAT.2012,tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=axesAT.2012+15,tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D',''),las=1,cex.axis=0.8)
 mtext(expression(paste('Saturation Index: ', phi/phi, 'sat')), side=2, line=3,cex=0.6)
-legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey75','grey45','grey25','grey15'))
+legend('bottomleft', horiz=F,bty='n', cex=0.8, c('Alpine pasture', 'Grassland - irrigated','Grassland -  not irrigated','Vineyards - no vegetation'), lty=0, text.col=c('grey5','forestgreen','limegreen','darkred'))
 
 
 
 
 #####
 #ETa/ETp
-plot(ETa.alp.12,col='grey75',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
-points(ETa.ml.12,col='grey45',type='l',lwd=2)
-points(ETa.vng.12,col='grey15',type='l',lwd=2)
+plot(ETa.alp.12,col='grey5',type='l',lwd=2,ann=F,axes=F,xlim=c(0,13),ylim=c(-5,ylm))
+points(ETa.ml.12,col='forestgreen',type='l',lwd=2)
+points(ETa.vng.12,col='darkred',type='l',lwd=2)
 axis(2,cex.axis=0.8,las=2,at=seq(0,ylm+10,20),labels=seq(0,ylm+10,20))
 axis(1,at=seq(0.5,12.5,1),tick=T,labels=c('','','','','','','','','','','','',''),las=2,cex.axis=0.8)
 axis(1,at=seq(1,12,1),tick=F,labels=c('J','F','M','A','M','J','J','A','S','O','N','D'),las=1,cex.axis=0.8)
