@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2015.11.17
-# last modified on 2016.02.03
+# last modified on 2016.02.05
 # source('/Volumes/Data/PhD/Script/R/brochure.r')
 # https://github.com/biogis/r/blob/master/brochure.r
 # Let the scipt work.
@@ -426,6 +426,11 @@ listSp <- c('Chiroptera',
             'Vespertilio murinus',
             'Myotis blythii','Rhinolophus ferrumequinum')
 
+result <- read.csv(text='sp','nbre donnees','Proportion donnees','ancienne donnee','donnee recente','nbre km2','nbre colonies', 'altitude min', 'altitude max', 'altitude moyenne','altitude mediane',
+                         'nbre donnees morpho','AB min','AB max','AB median','AB moyen','Poid min', 'Poid max','Poid median','Poid moyen','Pouce','Griffe du pouce')
+
+
+
 
 for(sp in listSp){
   # sp <- listSp[1];sp
@@ -539,17 +544,17 @@ names(batmorph);dim(batmorph)
   nMorph <- dim(batmorph)[1]
  
    
-  dtf.resum.site <- t(data.frame('nbre données' = nData,
-  								'Proportion données' =   PropData,
-                                 'ancienne donnée' = oldData,
-                                 'donnée récente' = lastData,
+  dtf.resum.site <- t(data.frame('nbre donnees' = nData,
+  								'Proportion donnees' =   PropData,
+                                 'ancienne donnee' = oldData,
+                                 'donnée recente' = lastData,
                                  'nbre km2' = nSQkm,
                                  'nbre colonies' = nCol,
                                  'altitude min' = minAlt,
                                  'altitude max' = maxAlt,
                                  'altitude moyenne' = meanAlt,
                                  'altitude mediane' = medianAlt))
-  dtf.resum.morph <- t(data.frame('nbre données morpho' = nMorph,
+  dtf.resum.morph <- t(data.frame('nbre donnees morpho' = nMorph,
                                   'AB min' =  ABmin,
                                   'AB max' =  ABmax,
                                   'AB median' =  ABmedian,
@@ -560,9 +565,33 @@ names(batmorph);dim(batmorph)
                                   'Poid moyen' = Pmean,
                                   'Pouce' = Pce,
                                   'Griffe du pouce' = GrffPce))
+  
+  resum <- data.frame('sp' = sp,
+                      'nbre donnees' = nData,
+                      'Proportion donnees' =   PropData,
+                      'ancienne donnee' = oldData,
+                      'donnee recente' = lastData,
+                      'nbre km2' = nSQkm,
+                      'nbre colonies' = nCol,
+                      'altitude min' = minAlt,
+                      'altitude max' = maxAlt,
+                      'altitude moyenne' = meanAlt,
+                      'altitude mediane' = medianAlt,
+                      'nbre donnees morpho' = nMorph,
+                      'AB min' =  ABmin,
+                      'AB max' =  ABmax,
+                      'AB median' =  ABmedian,
+                      'AB moyen' = ABmean,
+                      'Poid min' = Pmin,
+                      'Poid max' = Pmax,
+                      'Poid median' = Pmedian,
+                      'Poid moyen' = Pmean,
+                      'Pouce' = Pce,
+                      'Griffe du pouce' = GrffPce)
+  
   print(dtf.resum.site)
   print(dtf.resum.morph)
-  
+  result <- rbind(result,resum)  
   
   #Create Point shapefile for the given dtf
   names(dtf)
@@ -958,5 +987,6 @@ write.csv(lause,csvName,row.names=F)
   dev.off()
   embed_fonts(pdfName,outfile=pdfName)
 }
+write.csv(result,'/Users/erey/Dropbox/brochure fribat/dtf.FRIbat.DATA.csv')
 end <- Sys.time()
 end-start
