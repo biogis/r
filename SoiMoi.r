@@ -2,7 +2,7 @@ try(source('D:/erey/CloudStation/Script/R/Template.r'),silent=T)
 try(source('/Volumes/Data/PhD/Script/R/Template.r'),silent=T)
 
 try(setwd('/Volumes/Data/PhD/R/DATA.PhD'),silent=T)
-try(setwd('D:/erey/CloudStation/R/SoilPaper'),silent=T)
+try(setwd('D:/erey/CloudStation/R/DATA.PhD'),silent=T)
 
 
 ####################################################################################################
@@ -18,18 +18,20 @@ head(soil)
 lause <- unique(soil$LandUse)
 depth <- unique(soil$Depth)
 
-result <- read.csv(text='lulc,depth,fc')
+result <- read.csv(text='lulc,depth,sat,fc,wp,awc')
 
 for(lu in lause){
   for(dpth in depth){print(lu)
     print(dpth)
     index <- which(soil$LandUse==lu & soil$Depth==dpth)
-    fcCalc <- median(soil[index,7],na.rm=T)
-    print(fcCalc)
-    dtf.fc <- data.frame(lu,dpth,fcCalc)
-    result <- rbind(result,dtf.fc)}}
+    sat.f <- max(soil[index,8],na.rm=T)
+    fc.f <- median(soil[index,7],na.rm=T)
+    wp.f <- min(soil[index,9],na.rm=T)
+    awc.f <- fc.f-wp.f
+    dtf.sfp <- data.frame(lu,dpth,sat.f,fc.f,wp.f,awc.f)
+    result <- rbind(result,dtf.sfp)}}
 print(result)
-
+write.csv(result,'D:/erey/Dropbox/Sat.FC.WP.csv')
 
 listFile <- c( "ec1.PU.D.csv","ec2.Alp.D.csv","ec4.VG.VNG.D.csv","ec7.PL.ML.D.csv")
 
@@ -37,6 +39,7 @@ dtf.plml <- read.csv('ec7.PL.ML.D.csv',sep=',',header=T);names(dtf.plml)
 dtf.pu <- read.csv('ec1.PU.D.csv',sep=',',header=T);names(dtf.pu)
 dtf.wine <- read.csv('ec4.VG.VNG.D.csv',sep=',',header=T);names(dtf.wine)
 dtf.alp <- read.csv('ec2.Alp.D.csv',sep=',',header=T);names(dtf.alp)
+
 
 PhiSatALP<- max(dtf.alp$Alp_5TE_5cm,na.rm=T)*1+
   max(dtf.alp$Alp_EC5_15cm,na.rm=T)*1.25+
@@ -55,6 +58,16 @@ PhiSatPL<- max(dtf.plml$PL_5TE_5cm,na.rm=T)*1+
   max(dtf.plml$PL_5TM_30cm,na.rm=T)*1.5+
   max(dtf.plml$PL_EC5_45cm,na.rm=T)*2.25+
   max(dtf.plml$PL_EC5_60cm,na.rm=T)*2.5
+
+####
+#SoiMoi Index
+
+PhiSatPL<- ((dtf.plml$PL_5TE_5cm-4)/33.8)*1+
+  ((dtf.plml$PL_EC5_15cm-5.7)/31.5)*1.25+
+  ((dtf.plml$PL_5TM_30cm-3.5)/18.7)*1.5+
+  ((dtf.plml$PL_EC5_45cm-0.8)/21.15)*2.25+
+  ((dtf.plml$PL_EC5_60cm-1.6)/13.8)*2.5
+
 
 PhiSatML<- max(dtf.plml$ML_5TE_5cm,na.rm=T)*1+
   max(dtf.plml$ML_EC5_15cm,na.rm=T)*1.25+
