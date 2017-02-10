@@ -7,22 +7,24 @@ proj <- '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +
 #dev.off()
 
 ## Set library path
+try(.libPaths("//eaw-homedirs/reyemman$/My Documents/R/win-library/3.2"),silent=T)
 # try(.libPaths("C:/Program Files/R/R-3.2.2/library"),silent=T)
+# try(.libPaths('//giubserv01/hydro/userdata/erey/Documents/R/win-library/3.2'),silent=T)
 
 
 packages <- c(
-'data.table',
   #stat libraries
   'lattice','ade4','permute','reshape','zoo','miscTools','mra','Rcapture',
   #'readxl','vegan',
   
   #Spatial libraries
-  'foreign','sp','plotrix','raster','maps','proj4','rgeos','grid',
+  'foreign','sp','plotrix','raster','maps','proj4','rgeos',
+  'grid',  'gridBase','rworldmap',
   'maptools','rgdal','deldir','splancs','spatial','spatialkernel',
   'spatstat','KernSmooth','scales','plyr','Rcpp',
   
   #NCDF, Rain and temperature libraries
-  'fts','ncdf',#'gpclib',
+  'fts',#'ncdf',#'gpclib',
   
   #BIOMOD libraries
   'splines','randomForest','survival','gbm','gam','mgcv','MASS','abind',
@@ -54,8 +56,6 @@ for(pkg in packages){print(pkg)
   }
 }
 
-print("import dtf using: fread(dtfPATH,sep='auto') or even fread(dtfPATH)")
-
 gpclibPermit()
 print('#Register the number of cores for parallel computation')
 registerDoParallel(cores=7)
@@ -68,7 +68,7 @@ print('Use font from the OS, list all fonts: fonttable()')
 print('#pdf("rplot.pdf",paper="a4r",family="DINbeck",width=11,height=8.5)')
 print('p+theme_bw(base_size = 18, base_family = "DINBek")+...')
 
-try(setwd('~/Documents/GIS/PyGIS_SSD'),silent=T)
+try(setwd('/Users/erey/Documents/GIS/PyGIS_SSD'),silent=T)
 try(setwd('e:/PyGIS'),silent=T)
 
 
@@ -640,8 +640,6 @@ print('moving average using zoo library, use as: rollmean(x,k) or rollmedian(x,k
 print('median by row, use as rowMedians(x), colMedians, rowMeans(x), colMeans()')
 print('scatterplot with correlation values: e.g. ggpairs(iris[,1:4])')
 print('use as source_https("https://raw.githubusercontent.com/biogis/CC/master/template.r")')
-print("import dtf using: fread(dtfPATH,sep='auto') or even fread(dtfPATH)")
-
 
 # ########################################################################
 # 
