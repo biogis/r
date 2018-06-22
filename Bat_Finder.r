@@ -206,7 +206,7 @@ peakBin <- colMaxs(dt$amp,na.rm=T)
         }
     }
   }
-  print(paste(y,':',Sys.time()-start.1,sep=' '))
+  print(paste(y,': seq:',Sys.time()-start.1,'; Total: ',Sys.time()-start,sep=' '))
   tt <- c(tt,Sys.time()-start.1)
   
   rm(output,pks,nse,pwr.bat,pwr,rms.tot.filt,r2,slp,data.tl,tl,dtf.freq,peakBin,mean.mod,
