@@ -85,7 +85,7 @@ tt <- c()
 
 a <- readWave(fns[1])
 # str(a)
-wl <- 512
+wl <- 1024
 ovlp <- 0
 wl.half <- wl/2
 fH <- a@samp.rate
