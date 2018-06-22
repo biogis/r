@@ -234,9 +234,8 @@ print('-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.')
 print(' ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^ ^Ö^')
 print(' ')
 end <- Sys.time()
+print(in.dir)
 print(end-start)
-
-print(' ')
 print(summary(tt))
 
 
