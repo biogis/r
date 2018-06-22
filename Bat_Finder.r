@@ -64,10 +64,10 @@ spectral.colors <- colorRampPalette(c('red3','darkblue','gold2','limegreen','gre
 
 
 #choose working directory with all wav files
-in.dir <- choose.dir()
+in.dir <- choose.dir(caption = "Select input wav folder")
 
 #choose copying directory
-out.dir <- choose.dir()
+out.dir <- choose.dir(caption = "Select output wav folder")
 
 setwd(out.dir)
 
