@@ -160,7 +160,7 @@ peakBin <- colMaxs(dt$amp,na.rm=T)
     
     pwr <- data.frame('freq'= row[-length(row)],'amp'=mean.mod) #dataframe for power spectrum
     
-    pwr.bat <- pwr[which(pwr$freq>11 & pwr$freq<60 | # Look for any bat in freq range 10 to 60 kHz
+    pwr.bat <- pwr[which(pwr$freq>15 & pwr$freq<60 | # Look for any bat in freq range 10 to 60 kHz
                            pwr$freq>75 & pwr$freq<85 | # Look for rFe in freq range 75 to 85 kHz
                            pwr$freq>100 & pwr$freq<110),] # Look fir rHi in freq range 100 to 110 kHz
     pks.i <- find_peaks(pwr.bat$amp,15) # find index with peaks values
