@@ -58,7 +58,7 @@ setwd(in.dir)
 ktList <- c('AG','AI','AR','BE','BL','BS','FR','GE','GL','GR','JU','LU','NE','NW','OW','SG','SH','SO','SZ','TI','TG','UR','VD','VS','ZG','ZH')
 
 urlList <- c('https://data.geo.admin.ch/ch.bafu.bundesinventare-flachmoore/objectsheets/2017revision/cantons',
-         'https://data.geo.admin.ch/ch.bafu.bundesinventare-hochmoore/objectsheets/2017revision/cantons')
+             'https://data.geo.admin.ch/ch.bafu.bundesinventare-hochmoore/objectsheets/2017revision/cantons')
 
 result.all <- read.csv(text='Name,Obj,cx,cy,Alt,Surf')
 temp <- tempfile()
@@ -81,24 +81,24 @@ for(u in urlList){
     }
   }
 }
-      
+
 fns <- list.files(fn.f,pattern='.pdf$',all.files=T,full.names=T,recursive=T,include.dirs=T)
 print(length(fns))
 
 for(f in fns){
   pdf.f <- pdf_text(f)
   txt <- strsplit(pdf.f,split = '\n') #convert all text from pdf file, \n calling a new line
-
+  
   Name.i <- grep('Localité',txt[[1]])
   Name <- strsplit(txt[[1]][Name.i+1],split='\r')[[1]]
   Name <- trimws(Name) #remove white space
   Name <- as.character(Name) # convert to integer value
-
+  
   Obj.i <- grep('Objet',txt[[1]])
   Obj <- strsplit(txt[[1]][Obj.i+1],split='\r')[[1]]
   Obj <- strsplit(Obj,split=' ')[[1]]
   Obj <- as.integer(Obj[length(Obj)])
-        
+  
   cxcy.i <- grep('Coordonnées',txt[[1]])
   cxcy <- strsplit(txt[[1]][cxcy.i+1],split='\r')[[1]] #get cxcy from file and separate cx and cy
   cxcy <- strsplit(cxcy,split='/') #separate cx and cy
@@ -129,7 +129,7 @@ for(f in fns){
                          'cy'=cy,
                          'Alt'=Alt,
                          'Surf'=Surf)
-
+  
   result.all <- rbind(result.all,dtf.temp)
   print(dtf.temp)
 }
@@ -139,4 +139,67 @@ for(f in fns){
 
 
 write.csv(result.all,'ListeSite_Marais_cxcy_fromSource.csv',row.names = F,fileEncoding = 'latin1')
+
+
+
+
+####################################################################################
+####################################################################################
+
+
+dtf <- read.csv('ListeSite_Marais.csv',fileEncoding = 'latin1')
+summary(dtf)
+fns <- dtf$RefObjBlat
+
+dtf <- data.frame(dtf,'cx'=NA,'cy'=NA,'NamesFile'=NA, 'objID'=NA, 'Alt'=NA, 'Surf'=NA)
+
+
+  url.f <- as.character(f)
+  dest.f <- file.path(fn.f,basename(url.f))
+  download.file(url.f,dest.f,mode='wb')
+  pdf.f <- pdf_text(dest.f)
+  txt <- strsplit(pdf.f,split = '\n') #convert all text from pdf file, \n calling a new line
+  
+  Name.i <- grep('Localité',txt[[1]])
+  Name <- strsplit(txt[[1]][Name.i+1],split='\r')[[1]]
+  Name <- trimws(Name) #remove white space
+  Name <- as.character(Name) # convert to integer value
+  
+  Obj.i <- grep('Objet',txt[[1]])
+  Obj <- strsplit(txt[[1]][Obj.i+1],split='\r')[[1]]
+  Obj <- strsplit(Obj,split=' ')[[1]]
+  Obj <- as.integer(Obj[length(Obj)])
+  
+  cxcy.i <- grep('Coordonnées',txt[[1]])
+  cxcy <- strsplit(txt[[1]][cxcy.i+1],split='\r')[[1]] #get cxcy from file and separate cx and cy
+  cxcy <- strsplit(cxcy,split='/') #separate cx and cy
+  cx <- cxcy[[1]][1] #get cx
+  cx <- trimws(cx) #remove white space
+  cx <- gsub("’","",trimws(cx)) #remove 1000 separator
+  cx <- as.integer(cx) # convert to integer value
+  
+  cy <- cxcy[[1]][2] #get cy
+  cy <- gsub("’","",cy) #remove 1000 separator
+  cy <- as.integer(cy) # convert to integer value
+  
+  Alt.i <- grep('Altitude',txt[[1]])
+  Alt <- strsplit(txt[[1]][Alt.i+1],split='\r')[[1]] #get cxcy from file and separate cx and cy
+  Alt <- trimws(Alt) #remove white space
+  Alt <- gsub(" m","",trimws(Alt)) #remove altitude unit
+  Alt <- as.numeric(Alt) # convert to integer value
+  
+  Surf.i <- grep('Surface',txt[[1]])
+  Surf <- strsplit(txt[[1]][Surf.i+1],split='\r')[[1]] #get cxcy from file and separate cx and cy
+  Surf <- trimws(Surf) #remove white space
+  Surf <- gsub(" ha","",trimws(Surf)) #remove altitude unit
+  Surf <- as.numeric(Surf) # convert to integer value
+  
+  index <- which(f==fns)
+  dtf[index,]
+  dtf[index,c( "cx","cy","NamesFile","objID","Alt","Surf")] <- c(cx,cy,Name,Obj,Alt,Surf)
+  
+}
+
+
+write.csv(dtf,'ListeSite_Marais_cxcy_fromShape.csv',row.names = F,fileEncoding = 'latin1')
 
