@@ -64,8 +64,8 @@ result.all <- read.csv(text='Name,Obj,cx,cy,Alt,Surf')
 temp <- tempfile()
 fn.f <- file.path(getwd(), 'MaraisFiles')
 
-if (!dir.exists(output_dir)){
-  dir.create(output_dir)
+if (!dir.exists(fn.f)){
+  dir.create(fn.f)
 } else {
   print("Dir already exists!")
 }
