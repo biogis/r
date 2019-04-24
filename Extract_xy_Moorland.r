@@ -32,7 +32,7 @@
 
 
 
-packages <- c('httr','pdftools','RCurl','data.table','openxlsx')
+packages <- c('httr','pdftools','RCurl','data.table','openxlsx','sp','rgdal')
 
 
 for(pkg in packages){print(pkg)
@@ -145,6 +145,9 @@ write.csv(result.all,'ListeSite_Marais_cxcy_fromSource.csv',row.names = F,fileEn
 
 ####################################################################################
 ####################################################################################
+# data from shapefiles
+####################################################################################
+####################################################################################
 
 
 dtf <- read.csv('ListeSite_Marais.csv',fileEncoding = 'latin1')
@@ -153,7 +156,7 @@ fns <- dtf$RefObjBlat
 
 dtf <- data.frame(dtf,'cx'=NA,'cy'=NA,'NamesFile'=NA, 'objID'=NA, 'Alt'=NA, 'Surf'=NA)
 
-
+for(f in fns){
   url.f <- as.character(f)
   dest.f <- file.path(fn.f,basename(url.f))
   download.file(url.f,dest.f,mode='wb')
@@ -203,3 +206,31 @@ dtf <- data.frame(dtf,'cx'=NA,'cy'=NA,'NamesFile'=NA, 'objID'=NA, 'Alt'=NA, 'Sur
 
 write.csv(dtf,'ListeSite_Marais_cxcy_fromShape.csv',row.names = F,fileEncoding = 'latin1')
 
+
+
+####################################################################################
+####################################################################################
+# concert lv95 to lv03
+####################################################################################
+####################################################################################
+
+
+
+cxcy.lv95 <- data.frame('x'=as.numeric(dtf$cx),'y'=as.numeric(dtf$cy))
+coordinates(cxcy.lv95) <- ~x+y
+class(cxcy.lv95)
+
+# We tell R our data it's on LV95, EPSG=2056
+cxcy.lv95@proj4string <- CRS("+init=epsg:2056")
+cxcy.lv95@coords
+
+plot(cxcy.lv95)
+
+# Then we transform the data to lv03
+cxcy.lv03 <- spTransform(cxcy.lv95, CRS("+init=epsg:21781"))
+cxcy.lv03@coords
+dtf <- cbind(dtf,as.data.frame(cxcy.lv03))
+
+dim(dtf)
+
+write.csv(dtf,'ListeSite_Marais_cxcy_fromShape.csv',row.names = F,fileEncoding = 'latin1')
