@@ -153,15 +153,21 @@ writeRaster(r.mn,rasterName,format='GTiff',overwrite=T)
 
 
 # open isopote data frame, and show control values
-dt <- read.csv('isoscape_2013_2018.csv',sep=';',header=T)
-summary(dt)
-str(dt)
-dim(dt)
+dtf <- read.csv('isoscape_2013_2018.csv',sep=';',header=T)
+summary(dtf)
+str(dtf)
+dim(dtf)
+
 
 # concatenate values for the group selection in the raster analysis section
-dt$source_ID <- paste(dt$AGE,dt$t_PRELE,sep='_')
-dt$ORIG_ID <- paste(dt$AGE,dt$ORIGINE,sep='_')
-dt$jgd_ID <- paste(dt$KT,dt$t_PRELE,sep='_')
+dtf$source_ID <- paste(dtf$AGE,dtf$t_PRELE,sep='_')
+dtf$ORIG_ID <- paste(dtf$AGE,dtf$ORIGINE,sep='_')
+dtf$jgd_ID <- paste(dtf$KT,dtf$t_PRELE,sep='_')
+
+colKeep <- c('sp','t_PRELE','lon','lat','cz','ID','AGE','dH_correct','dH_reg','ORIGINE', 'source_ID','ORIG_ID','jgd_ID')
+dt <- dtf[,colKeep]
+head(dt)
+
 
 # show first line for control
 t(dt[1,])
@@ -261,8 +267,8 @@ for(d in slct){
 
 # reclassify the raster values with a probability based on the Mean +- 2*Standard deviation
   for(b in slct.bin){
+    print(b)
     if(!(b=='NA')){
-      # print(b)
       # find in which column is found the bin b
       c <- unique(names(dt.slct)[which(dt.slct == b, arr.ind=T)[, "col"]])
       # find which row has data with the bin b in the column c
@@ -327,8 +333,8 @@ for(d in slct){
           # plot the reclassified - probability of origin of the woodcock, add countries and ocean for clarity and orientation
           plot(r,ext=extent,
                col=ScoRusRamp(255),
-               xlim=c(-25,70),ylim=c(30,85),
-               main=paste('Bin',b,propValue, '%','of',n,'values plotted',sep=' '))
+               xlim=c(-25,70),ylim=c(30,85)#,main=paste('Bin',b,propValue, '%','of',n,'values plotted',sep=' ')
+               )
           plot(shp.bdy,col='NA',border='black',add=T)
           plot(shp.water,col='grey10',border='NA',add=T)
           dev.off()
