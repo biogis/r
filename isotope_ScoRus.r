@@ -164,7 +164,7 @@ dtf$source_ID <- paste(dtf$AGE,dtf$t_PRELE,sep='_')
 dtf$ORIG_ID <- paste(dtf$AGE,dtf$ORIGINE,sep='_')
 dtf$jgd_ID <- paste(dtf$KT,dtf$t_PRELE,sep='_')
 
-colKeep <- c('sp','t_PRELE','lon','lat','cz','ID','AGE','dH_correct','dH_reg','ORIGINE', 'source_ID','ORIG_ID','jgd_ID')
+colKeep <- c('sp','t_PRELE','lon','lat','cz','ID','AGE','dH_correct','dH_reg','ORIGINE','KT', 'source_ID','ORIG_ID','jgd_ID')
 dt <- dtf[,colKeep]
 head(dt)
 
