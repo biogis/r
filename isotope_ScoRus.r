@@ -33,10 +33,10 @@ packages <- c(
   
   #Spatial libraries
   'foreign','sp','raster','maps','proj4','rgeos','maptools','rgdal','spatial',
-
+  
   #graphics libraries,
   'TeachingDemos','ggplot2','RColorBrewer','extrafont','jpeg','png',
-
+  
   #R libraries
   'telegram.bot','rawr'#'installr'
 )
@@ -138,6 +138,8 @@ plot(r.forest,add=T,col='grey20',legend=F)
 # restrict the hma amjjas layer to the pixel with a forest cover > 20%
 r.mn.frt <- mask(r.mn,r.forest)
 plot(r.mn.frt,col=ScoRusRamp(255),ext=extent,xlim=c(-25,70),ylim=c(30,85))
+plot(shp.water,col='black',border='NA',add=T)
+
 
 jpegName <- paste(getwd(),'Graphs','Deuterium_Europe_AMJJAS.jpg',sep='/')
 jpeg(jpegName,1200,1200,units = 'px',quality=100,pointsize=36)
@@ -145,7 +147,10 @@ plot(r.mn,col=BrBG(255),ext=extent,xlim=c(-25,70),ylim=c(30,85),legend=T)
 #plot(r.mn.frt,col=elevRamp(255),ext=extent,xlim=c(-25,70),ylim=c(30,85),legend=T)
 plot(shp.bdy,col='NA',border='black',add=T)
 plot(shp.water,col='black',border='NA',add=T)
+subplot(plot(shp.bdy,col='transparent',border='black',xlim=c(4.5,14.5),ylim=c(43,50),axes=F,ann=F,add=F),'bottomright',size=c(3,3))
+subplot(plot(r.mn,col=BrBG(255),xlim=c(4.5,14.5),ylim=c(43,50),alpha=0.65,legend=F,axes=F,ann=F,box=F),'bottomright',size=c(3,3))
 dev.off()
+
 
 # save the hma amjjas layer to a GTIFF format
 rasterName <- paste(getwd(),'raster','h049.tif',sep='/')
@@ -185,7 +190,7 @@ dt$bin.reg <- NA
 # loop through each line of the reclassification matrix, select the values between the intervals fr - to
 # and replace the values in the dt$bin.reg column
 for(i in 1:length(be)){
-dt[dt$dH_reg/10>rcl$from[i] & dt$dH_reg/10<rcl$to[i],'bin.reg'] <- rcl$becomes[i]}
+  dt[dt$dH_reg/10>rcl$from[i] & dt$dH_reg/10<rcl$to[i],'bin.reg'] <- rcl$becomes[i]}
 
 dt[1:10,c('dH_reg','bin.reg')]
 
@@ -202,7 +207,7 @@ slct <- c('ScoRus','a','j','a_jgd','j_jgd','a_CH','j_CH','TI','CH','jgd')
 
 # 2 loops:
 for(d in slct){
-#Subset data with a given category (d)
+  #Subset data with a given category (d)
   print(d)
   # find in which column is found the value d
   c <- unique(names(dt)[which(dt == d, arr.ind=T)[, "col"]])
@@ -211,7 +216,7 @@ for(d in slct){
   
   # select hunt data not in TI, to do MANUALLY
   # i <- which(dt[,'KT']!='TI' & dt[,'t_PRELE']=='jgd') 
-  # d <- 'NO_TI'
+  # d <- 'jgd_NO_TI'
   
   # select data with the group d
   dt.slct <- dt[i,]
@@ -229,7 +234,7 @@ for(d in slct){
   # compute proportion of data in each bin, and the cumulative sum
   dtf.bin$Prop <- round((dtf.bin$Freq/sum(dtf.bin$Freq,na.rm=T))*100,2)
   dtf.bin$CumSum <- cumsum(ifelse(is.na(dtf.bin$Prop), 0, dtf.bin$Prop)) + dtf.bin$Prop*0
-
+  
   # plot the proportion and cum sum of data in each bins
   pdfName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'CumSum','bin_Proportion','pdf',sep='.'),sep='/')
   pdf(pdfName,paper='a4r',width=11,height=8.5)
@@ -240,15 +245,15 @@ for(d in slct){
   box(col='grey')
   axis(2,cex.axis=1,col.axis='sienna',col='sienna')
   axis(1,at=c(min(index(dtf.bin$Var1)):max(index(dtf.bin$Var1))),
-	   labels=c(min(as.numeric(as.character(dtf.bin$Var1))):max(as.numeric(as.character(dtf.bin$Var1)))),
-	   las=3, cex.axis=1,col.axis='grey30',col='grey30')
+       labels=c(min(as.numeric(as.character(dtf.bin$Var1))):max(as.numeric(as.character(dtf.bin$Var1)))),
+       las=3, cex.axis=1,col.axis='grey30',col='grey30')
   par(new=T)
   plot(dtf.bin$Prop,type='h',col='tomato',ann=F,axe=F)
   mtext("Proportion [%]", side=4, line=3,cex=1.2,col="tomato")
   axis(4,cex.axis=1,col.axis='tomato',col='tomato')
   dev.off()
-
-
+  
+  
   # get the 1st and 3rd quantile of dH_reg of the d group
   qtl.1 <- quantile(dt.slct$dH_reg,.25)
   qtl.3 <- quantile(dt.slct$dH_reg,.75)
@@ -260,12 +265,12 @@ for(d in slct){
   dt.slct[i,c('bin.reg','bin.agg')] <- 'NA'
   dt.slct[-i,'bin.agg'] <- 'binAGG'
   head(dt.slct)
-
-
+  
+  
   # create a vector with the bin and aggregated data
   slct.bin <- c('binAGG',sort(unique(dt.slct$bin.reg)))
-
-# reclassify the raster values with a probability based on the Mean +- 2*Standard deviation
+  
+  # reclassify the raster values with a probability based on the Mean +- 2*Standard deviation
   for(b in slct.bin){
     print(b)
     if(!(b=='NA')){
@@ -281,8 +286,8 @@ for(d in slct){
       
       # compute the proportion of datas used for this map (length(dt[i,'dH_reg'])) in the group d (n)
       propValue <- round((length(dt[i,'dH_reg'])/n)*100,2)
-
-
+      
+      
       # check if standard deviation is not NA, else pass to another bin
       if(!is.na(e)){
         # set minimal and maximal value for the reclassification matrix, if m+SD < min(value of the raster), 
@@ -315,16 +320,16 @@ for(d in slct){
           # make the reclassification matrix
           rcl <- data.frame(from=r.from,to=r.to ,becomes= r.becomes)
           rcl
-
+          
           # reclassify the raster layer of hma amjjas masked with the forest using the reclassification matrix, save as GTIFF
           rasterName <- paste(getwd(),'raster',paste('ho49',d,b,'tif',sep='.'),sep='/')
           r <- reclassify(r.mn.frt,as.matrix(rcl),format='GTiff',filename=rasterName,overwrite=T)
-
+          
           # set probability = 0 to NA for mapping
           r[r==0] <- NA
           
           # plot the raster and save as jpeg
-          jpgName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'bin',b,'jpg',sep='.'),sep='/')
+          jpgName <- paste(getwd(),'Graphs',paste('isotope','reg','CHsubplot',d,'bin',b,'jpg',sep='.'),sep='/')
           jpeg(jpgName,1200,1200,units = 'px',quality=100,pointsize=36)
           
           # pdfName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'bin',b,'pdf',sep='.'),sep='/')
@@ -334,11 +339,14 @@ for(d in slct){
           plot(r,ext=extent,
                col=ScoRusRamp(255),
                xlim=c(-25,70),ylim=c(30,85)#,main=paste('Bin',b,propValue, '%','of',n,'values plotted',sep=' ')
-               )
+          )
           plot(shp.bdy,col='NA',border='black',add=T)
           plot(shp.water,col='grey10',border='NA',add=T)
-#		subplot(r,col=ScoRusRamp(255),xlim=c(5.8,10.6),ylim=c(45.7,47.9))
+          subplot(plot(shp.bdy,col='transparent',border='black',xlim=c(5.8,10.6),ylim=c(45.7,47.9),axes=F,ann=F,add=F),'bottomright',size=c(3,3))
+          subplot(plot(r,col=ScoRusRamp(255),xlim=c(5.8,10.6),ylim=c(45.7,47.9),legend=F,axes=F,ann=F),'bottomright',size=c(3,3))
           dev.off()
+
+          
         }
       }
     }
@@ -385,7 +393,7 @@ dt$orig <- NA
 
 for(i in 1:length(be)){
   dt[dt$dH_reg>rcl$from[i] & dt$dH_reg<rcl$to[i],'orig'] <- as.character(rcl$becomes[i])
-  }
+}
 
 
 # plot each origin for control
