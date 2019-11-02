@@ -35,7 +35,7 @@ packages <- c(
   'foreign','sp','raster','maps','proj4','rgeos','maptools','rgdal','spatial',
 
   #graphics libraries,
-  'ggplot2','RColorBrewer','extrafont','jpeg','png',
+  'TeachingDemos','ggplot2','RColorBrewer','extrafont','jpeg','png',
 
   #R libraries
   'telegram.bot','rawr'#'installr'
@@ -337,6 +337,7 @@ for(d in slct){
                )
           plot(shp.bdy,col='NA',border='black',add=T)
           plot(shp.water,col='grey10',border='NA',add=T)
+#		subplot(r,col=ScoRusRamp(255),xlim=c(5.8,10.6),ylim=c(45.7,47.9))
           dev.off()
         }
       }
