@@ -147,9 +147,10 @@ plot(r.mn,col=BrBG(255),ext=extent,xlim=c(-25,70),ylim=c(30,85),legend=T)
 #plot(r.mn.frt,col=elevRamp(255),ext=extent,xlim=c(-25,70),ylim=c(30,85),legend=T)
 plot(shp.bdy,col='NA',border='black',add=T)
 plot(shp.water,col='black',border='NA',add=T)
-subplot(plot(shp.bdy,col='transparent',border='black',xlim=c(4.5,14.5),ylim=c(43,50),axes=F,ann=F,add=F),'bottomright',size=c(3,3))
-subplot(plot(r.mn,col=BrBG(255),xlim=c(4.5,14.5),ylim=c(43,50),alpha=0.65,legend=F,axes=F,ann=F,box=F),'bottomright',size=c(3,3))
+subplot(plot(r.mn,col=BrBG(255),xlim=c(4.5,14.5),ylim=c(43,50),legend=F,axes=F,ann=F,box=T),'bottomright',size=c(3,3))
+subplot(plot(shp.bdy,col='transparent',border='black',bg='transparent',xlim=c(4.5,14.5),ylim=c(43,50),axes=F,ann=F,add=F),'bottomright',size=c(3,3))
 dev.off()
+
 
 
 # save the hma amjjas layer to a GTIFF format
@@ -261,10 +262,9 @@ for(d in slct){
   # find the rows where dH_reg is between the 1st and 3rd quantile
   i <- which(dt.slct$dH_reg<qtl.1 | dt.slct$dH_reg>qtl.3)
   
-  # creat a new column for aggregating the 1-3 quantile values
-  dt.slct[i,c('bin.reg','bin.agg')] <- 'NA'
-  #dt.slct[-i,'bin.agg'] <- 'binAGG'
-  dt.slct[i,'bin.agg'] <- 'binAGG'
+  # create a new column for aggregating the 1 -> 3 quantile values
+  # dt.slct[i,c('bin.reg','bin.agg')] <- 'NA'
+  dt.slct[-i,'bin.agg'] <- 'binAGG'
   head(dt.slct)
   
   
@@ -273,7 +273,7 @@ for(d in slct){
   
   # reclassify the raster values with a probability based on the Mean +- 2*Standard deviation
   for(b in slct.bin){
-    print(b)
+    # print(b)
     if(!(b=='NA')){
       # find in which column is found the bin b
       c <- unique(names(dt.slct)[which(dt.slct == b, arr.ind=T)[, "col"]])
@@ -297,7 +297,7 @@ for(d in slct){
         if((m+et)>r.mn@data@max){maxValue <- ceiling(r.mn@data@max)} else {maxValue <- floor(m+et)}
         
         # control interval values to pass to the next step
-        if(minValue<(m+et) & maxValue>(m-et)){
+        if(minValue<(m+et) & maxValue>(m-et) & minValue != maxValue){
           # print the bin, mean and sd value
           print(paste(b, m, e,sep='...-...'))
           
@@ -343,8 +343,12 @@ for(d in slct){
           )
           plot(shp.bdy,col='NA',border='black',add=T)
           plot(shp.water,col='grey10',border='NA',add=T)
-          subplot(plot(shp.bdy,col='transparent',border='black',xlim=c(5.8,10.6),ylim=c(45.7,47.9),axes=F,ann=F,add=F),'bottomright',size=c(3,3))
-          subplot(plot(r,col=ScoRusRamp(255),xlim=c(5.8,10.6),ylim=c(45.7,47.9),legend=F,axes=F,ann=F),'bottomright',size=c(3,3))
+          subplot(plot(shp.bdy,col='transparent',border='black',
+                       xlim=c(5.8,10.6),ylim=c(45.7,47.9),axes=F,ann=F),
+                  'bottomright',size=c(3,3))
+          subplot(plot(r,col=ScoRusRamp(255),xlim=c(5.8,10.6),ylim=c(45.7,47.9),
+                       legend=F,axes=F,ann=F),
+                  'bottomright',size=c(3,3))
           dev.off()
 
           
