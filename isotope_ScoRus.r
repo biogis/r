@@ -263,7 +263,8 @@ for(d in slct){
   
   # creat a new column for aggregating the 1-3 quantile values
   dt.slct[i,c('bin.reg','bin.agg')] <- 'NA'
-  dt.slct[-i,'bin.agg'] <- 'binAGG'
+  #dt.slct[-i,'bin.agg'] <- 'binAGG'
+  dt.slct[i,'bin.agg'] <- 'binAGG'
   head(dt.slct)
   
   
