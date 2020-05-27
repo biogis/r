@@ -2,7 +2,6 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2019.11.01
-# modified on 2019.11.13 --.-- add AGE as covariare
 
 # Spatial capture-recapture analysis on a woodcock project
 # info fauna CSCF & KARCH - @ Thierry Bohnenstengel
@@ -28,14 +27,14 @@ proj <- '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +
 # Library list
 packages <- c(
   #CMR libraries
-  'secr','openCR','mra','Rcapture','multimark',
+  'openCR','mra','Rcapture','multimark','secr',
   
   #habitat selection libraries
   'ade4','adehabitatLT','adehabitatHR','adehabitatHS','adehabitatMA',
   
   #stat libraries
   'lattice','permute','reshape','zoo','miscTools','data.table',
-
+  
   #Spatial libraries
   'foreign','sp','plotrix','raster','maps','proj4','rgeos',
   'maptools','rgdal','spatial','Rcpp',
@@ -47,8 +46,8 @@ packages <- c(
   'ggplot2','RColorBrewer','jpeg','png',
   
   #R libraries
-  'devtools','telegram.bot'
-  )
+  'devtools','telegram.bot','rlist'
+)
 
 
 # Check if library exist, install and/or update and activate it
@@ -67,8 +66,44 @@ for(pkg in packages){print(pkg)
 
 
 #fix working directory:
-# setwd(choose.dir(default = "", caption = "Select a working directory"))
-setwd('N:/PROJETS/externes/OFEV/BECASSE/CMR')
+setwd(choose.dir(default = "", caption = "Select a working directory"))
+
+# open and import datafiles and convert to .txt files
+edf <- read.csv(paste(getwd(),'spatial_CMR/edf_2016_2018_nid_migr.csv',sep='/'),sep=';', header = T, fileEncoding = 'latin1')
+tdf <- read.csv(paste(getwd(),'spatial_CMR/tdf.csv',sep='/'),sep=';', header = T, fileEncoding = 'latin1')
+dtel <- read.csv(paste(getwd(),'spatial_CMR/dtel.csv',sep='/'),sep=';', header = T, fileEncoding = 'latin1')
+head(edf);head(tdf);head(dtel)
+dim(edf);dim(tdf);dim(dtel)
+
+
+
+#read and save the data in a secr readable data format 
+# 1-. csv with real ',' as separator, 
+# 2-.txt file with tab as separator)
+write.csv(edf,paste(getwd(),'spatial_CMR/edf.csv',sep='/'),row.names=F)
+write.table(edf,paste(getwd(),'spatial_CMR/edf.txt',sep='/'),row.names=F)
+
+write.csv(tdf,paste(getwd(),'spatial_CMR/tdf.csv',sep='/'),row.names=F)
+write.table(tdf,paste(getwd(),'spatial_CMR/tdf.txt',sep='/'),row.names=F)
+
+write.csv(dtel,paste(getwd(),'spatial_CMR/dtel.csv',sep='/'),row.names=F)
+write.table(dtel,paste(getwd(),'spatial_CMR/dtel.txt',sep='/'),row.names=F)
+
+# create a vector of file names for captfile and trapfile
+# path to capture-recapture datafile
+captfile <- paste(getwd(),'spatial_CMR/edf.txt',sep='/') # link to capture file
+
+# path to trap datafile, it is 6* the same as we have 3 years sampling with 2 sessions per year
+trapfile <- c(paste(getwd(),'spatial_CMR/tdf.txt',sep='/'), # link to trapfile for 2016.a -. april - august (same for all years)
+              paste(getwd(),'spatial_CMR/tdf.txt',sep='/'), # link to trapfile for 2016.b -. september - november (same for all years)
+              paste(getwd(),'spatial_CMR/tdf.txt',sep='/'), # link to trapfile for 2017.a -. april - august (same for all years)
+              paste(getwd(),'spatial_CMR/tdf.txt',sep='/'), # link to trapfile for 2017.b -. september - november  (same for all years)
+              paste(getwd(),'spatial_CMR/tdf.txt',sep='/'), # link to trapfile for 2018.a -. april - august (same for all years)
+              paste(getwd(),'spatial_CMR/tdf.txt',sep='/')  # link to trapfile for 2018.b -. september - november  (same for all years)
+)
+
+# path to dtel datafile
+dtelfile <- paste(getwd(),'spatial_CMR/dtel.txt',sep='/')
 
 
 #open shapefile for the mask, convex hull of dcap-dtel-CH data with a 2 km buffer
@@ -76,86 +111,6 @@ fn <- file.path(paste(getwd(),'Boundary/ConvexHull_DCAP_DTEL_TRAP_Buffer2km.shp'
 shp <- readOGR(fn,p4s = proj,encoding = 'UTF-8',use_iconv = T);print(shp)
 
 plot(shp,col='limegreen',border='darkgreen')
-
-dirName <- paste(getwd(),'spatial_CMR',sep='/')
-# open and import datafiles and convert to .txt files
-edf <- read.csv(paste(dirName,'edf_2016_2018_nid_migr.csv',sep='/'),sep=';', header = T, fileEncoding = 'latin1')
-tdf <- read.csv(paste(dirName,'tdf.csv',sep='/'),sep=',', header = T, fileEncoding = 'latin1')
-dtel <- read.csv(paste(dirName,'dtel.csv',sep='/'),sep=',', header = T, fileEncoding = 'latin1')
-head(edf);head(tdf);head(dtel)
-dim(edf);dim(tdf);dim(dtel)
-
-age <- read.csv(paste(dirName,'AGE.csv',sep='/'),sep=';', header = T, fileEncoding = 'latin1')
-head(age)
-
-dt.dcap <- merge(edf,age,by='ID')
-edf <- dt.dcap[order(dt.dcap$Session,dt.dcap$Occasion),];head(edf)
-edf <- edf[,c('Session','ID','Occasion','detectorID','AGE')];head(edf)
-
-dt.dtel <- merge(dtel,age,by='ID');dtel <- dt.dtel
-dtel <- dt.dtel[order(dt.dtel$Session,dt.dtel$Occasion),];head(dtel)
-dtel <- dtel[,c('Session', 'ID', 'Occasion', 'x', 'y','AGE')];head(dtel)
-
-write.csv(edf,'edf_2016_2018_nid_migr_age.csv',row.names = F)
-write.csv(dtel,'dtel_age.csv',row.names = F)
-
-for(k in (unique(dt$AGE))){print(k)
-  # i <- which(dt.dcap$AGE==a)
-  # print(length(i))
-  dirName <- paste(getwd(),'spatial_CMR',k,sep='/')
-  if(!dir.exists(dirName)){dir.create(dirName)}
-
-  i <- which(dt.dcap$AGE==k)
-  c <- which(names(dt.dcap)=='AGE')
-  edf <- dt.dcap[i,-c]
-  edf <- edf[order(edf$Session,edf$Occasion),];head(edf)
-  edf <- edf[,c('Session','ID','Occasion','detectorID')];head(edf)
-  
-  
-  i <- which(dt.dtel$AGE==k)
-  c <- which(names(dt.dtel)=='AGE')
-  dtel <- dt.dtel[i,-c]
-  dtel <- dtel[order(dtel$Session),];head(dtel);dim(dtel)
-  dtel <- dtel[,c('Session', 'ID', 'Occasion', 'x', 'y')];head(dtel)
-  
-
-write.table(edf,paste(dirName,'edf.txt',sep='/'),row.names=F)
-write.table(tdf,paste(dirName,'tdf.txt',sep='/'),row.names=F)
-write.table(dtel,paste(dirName,'dtel.txt',sep='/'),row.names=F)
-# write.csv(edf,paste(dirName,'edf.csv',sep='/'),row.names=F)
-# write.csv(tdf,paste(dirName,'tdf.csv',sep='/'),row.names=F)
-# write.csv(dtel,paste(dirName,'dtel.csv',sep='/'),row.names=F)
-
-
-#  
-# #read and save the data in a secr readable data format 
-# # 1-. csv with real ',' as separator, 
-# # 2-.txt file with tab as separator)
-# write.csv(edf,paste(getwd(),'spatial_CMR/edf.csv',sep='/'),row.names=F)
-# write.table(edf,paste(getwd(),'spatial_CMR/edf.txt',sep='/'),row.names=F)
-#  
-# write.csv(tdf,paste(getwd(),'spatial_CMR/tdf.csv',sep='/'),row.names=F)
-# write.table(tdf,paste(getwd(),'spatial_CMR/tdf.txt',sep='/'),row.names=F)
-# 
-# write.csv(dtel,paste(getwd(),'spatial_CMR/dtel.csv',sep='/'),row.names=F)
-# write.table(dtel,paste(getwd(),'spatial_CMR/dtel.txt',sep='/'),row.names=F)
-
-# create a vector of file names for captfile and trapfile
-# path to capture-recapture datafile
-captfile <- paste(dirName,'edf.txt',sep='/') # link to capture file
-
-# path to trap datafile, it is 6* the same as we have 3 years sampling with 2 sessions per year
-trapfile <- c(paste(getwd(),'spatial_CMR','tdf.txt',sep='/'), # link to trapfile for 2016.a -. april - august (same for all years)
-              paste(getwd(),'spatial_CMR','tdf.txt',sep='/'), # link to trapfile for 2016.b -. september - november (same for all years)
-              paste(getwd(),'spatial_CMR','tdf.txt',sep='/'), # link to trapfile for 2017.a -. april - august (same for all years)
-              paste(getwd(),'spatial_CMR','tdf.txt',sep='/'), # link to trapfile for 2017.b -. september - november  (same for all years)
-              paste(getwd(),'spatial_CMR','tdf.txt',sep='/'), # link to trapfile for 2018.a -. april - august (same for all years)
-              paste(getwd(),'spatial_CMR','tdf.txt',sep='/')  # link to trapfile for 2018.b -. september - november  (same for all years)
-)
-
-# path to dtel datafile
-dtelfile <- paste(dirName,'dtel.txt',sep='/')
-
 
 
 # import data for Spatial-Capture-Recapture analysis
@@ -167,7 +122,7 @@ dtelfile <- paste(dirName,'dtel.txt',sep='/')
 # import capture-recaoture data
 captdata <- read.capthist(captfile = captfile, 
                           trapfile = trapfile,
-                          covnames = 'AGE',
+                          covnames = NULL,
                           trapcovnames = NULL,
                           detector = 'count',
                           fmt='trapID',
@@ -178,13 +133,13 @@ captdata <- read.capthist(captfile = captfile,
 trapdata <- read.traps(trapfile,detector = 'count',skip=1)
 
 
-# # import telemetry data
-# dteldata <- read.telemetry(file = dtelfile,skip=1,covnames = 'AGE')
-# 
-# summary(dteldata)
-# 
-# #combine telemetry data, not used for the models
-# # capt.dtel.data <-MS.capthist(captdata, dteldata,renumber = FALSE)
+# import telemetry data
+dteldata <- read.telemetry(file = dtelfile,skip=1,covnames = NULL)
+
+summary(dteldata)
+
+#combine telemetry data, not used for the models
+capt.dtel.data <-MS.capthist(captdata, dteldata,renumber = FALSE)
 # capt.dtel.data <-addTelemetry(captdata, dteldata,type = 'dependent',collapsetelemetry = T)
 
 
@@ -202,8 +157,8 @@ trapdata <- read.traps(trapfile,detector = 'count',skip=1)
 # M(t+1) cumulative number of detected individuals on each occasion t
 
 summary(captdata)
-# summary(dteldata)
-# summary(capt.dtel.data)
+summary(dteldata)
+summary(capt.dtel.data)
 
 
 
@@ -228,23 +183,22 @@ dev.off()
 #(cf Calhoun and Casby 1958, Slade and Swihart 1983).
 #get values from capt history file and dtel file
 initialsigma.dcap <-RPSV(captdata,CC =TRUE);initialsigma.dcap
-# initialsigma.dtel <-RPSV(dteldata,CC =TRUE);initialsigma.dtel
+initialsigma.dtel <-RPSV(dteldata,CC =TRUE);initialsigma.dtel
 
-dtf.move <- t(as.data.frame(initialsigma.dcap))
-# dtf.move <- t(cbind(as.data.frame(initialsigma.dcap),as.data.frame(initialsigma.dtel)))
+dtf.move <- t(cbind(as.data.frame(initialsigma.dcap),as.data.frame(initialsigma.dtel)))
 for(inisig in dtf.move){cat("Quick and biased estimate of sigma =", inisig/1000,"km\n")}
 
 # define the buffer around the recapture for analysis
 # As a rule of thumb, a buffer of 4 sigma HN is likely to be adequate (result in truncation bias of less than 0.1%). 
 # A pilot estimate of sigma HN may be found for a particular dataset (capthist object) with the function
 # RPSV with the argument CC set to TRUE:
-bfr.4 <- 4*median(dtf.move[,1],na.rm=T)
+bfr.4 <- 4*median(dtf.move[,1])
 
 #choose a arger uffer width to detect detection tail
-bfr.6 <- 6*median(dtf.move[,1],na.rm=T)
+bfr.6 <- 6*median(dtf.move[,1])
 
 #choose a arger uffer width to detect detection tail
-bfr.10 <- 10*median(dtf.move[,1],na.rm=T)
+bfr.10 <- 10*median(dtf.move[,1])
 
 print(paste(round(bfr.4/1000,3),'km',sep=' '))
 print(paste(round(bfr.6/1000,3),'km',sep=' '))
@@ -276,86 +230,53 @@ dev.off()
 # HR 	  hazard rate
 # HHR 	hazard hazard rate
 
-fit.NULL <- secr.fit(captdata,
-                     mask = clippedMask,
-                     buffer=bfr.10, 
-                     trace = T,
-                     details = list(autoini = 2),
-                     CL=T,
-                     method ="Nelder-Mead"
-                     )
-
 fit.HNbk <- secr.fit(captdata,
                      mask = clippedMask, 
                      buffer=bfr.10, 
                      detectfn = 'HN', 
                      trace = T, 
-                     model = list(D~Session,g0 ~ bk),
-                     details = list(autoini = 2),
-                     binomN = 1,
-                     CL=T,
-                     method ="Nelder-Mead"
-                     )
+                     model = list(D~Session,g0 ~ bk)
+)
 
 fit.HHNbk <- secr.fit(captdata,
                       mask = clippedMask, 
                       buffer=bfr.10, 
                       detectfn = 'HHN', 
                       trace = T, 
-                      model = list(D~Session,g0 ~ bk),
-                      details = list(autoini = 2),
-                      binomN = 1,
-                      CL=T,
-                      method ="Nelder-Mead"
-                      )
+                      model = list(D~Session,g0 ~ bk)
+)
 
 fit.EXbk <- secr.fit(captdata,
                      mask = clippedMask, 
                      buffer=bfr.10, 
                      detectfn = 'EX', 
                      trace = T, 
-                     model = list(D~Session,g0 ~ bk),
-                     details = list(autoini = 2),
-                     binomN = 1,
-                     CL=T,
-                     method ="Nelder-Mead"
-                     )
+                     model = list(D~Session,g0 ~ bk)
+)
 
 fit.HEXbk <- secr.fit(captdata,
                       mask = clippedMask, 
                       buffer=bfr.10, 
                       detectfn = 'HEX', 
                       trace = T, 
-                      model = list(D~Session,g0 ~ bk),
-                      details = list(autoini = 2),
-                      binomN = 1,
-                      CL=T,
-                      method ="Nelder-Mead"
-                      )
+                      model = list(D~Session,g0 ~ bk)
+)
 
 fit.HRbk <- secr.fit(captdata,
                      mask = clippedMask, 
                      buffer=bfr.10, 
                      detectfn = 'HR', 
                      trace = T, 
-                     model = list(D~Session,g0 ~ bk),
-                     details = list(autoini = 3),
-                     binomN = 1,
-                     CL=T,
-                     method ="Nelder-Mead"
-                     )
+                     model = list(D~Session,g0 ~ bk)
+)
 
 fit.HHRbk <- secr.fit(captdata,
                       mask = clippedMask, 
                       buffer=bfr.10, 
                       detectfn = 'HHR', 
                       trace = T, 
-                      model = list(D~Session,g0 ~ bk),
-                      details = list(autoini = 2),
-                      binomN = 1,
-                      CL=T,
-                      method ="Nelder-Mead"
-                      )
+                      model = list(D~Session,g0 ~ bk)
+)
 
 
 #create a secr list with all detection functions modelling
@@ -372,22 +293,20 @@ aic.fits <- AIC(fits);aic.fits
 
 # get the density estimates for each model
 D <- collate(fits,realnames='D')[,1:6,1:4,]
-write.csv(as.data.frame(D),paste(dirName,'DensityEstimate.csv',sep='/'),row.names = T)
+write.csv(as.data.frame(D),'DensityEstimate.csv',row.names = T)
 
 #One way to duck the problem of selecting a single model is 
 #to average over the models using AIC model weights. There is a function for this:
 
-result.H <- model.average(secrlist(Null = fit.NULL,
-                                   HN = fit.HNbk, 
+result.H <- model.average(secrlist(HN = fit.HNbk, 
                                    EX = fit.EXbk, 
                                    HR = fit.HRbk))
 
-result.HH <- model.average(secrlist(Null = fit.NULL,
-                                    HHN = fit.HHNbk,
+result.HH <- model.average(secrlist(HHN = fit.HHNbk,
                                     HEX = fit.HEXbk,
                                     HHR = fit.HHRbk))
 
-list.save(list(result.H,result.HH), paste(dirName,'model.average.fits.json',sep='/'))
+list.save(list(result.H,result.HH), 'model.average.fits.json')
 
 # convert results to a dataframe
 result.H <- as.data.frame(result.H[,,'D'])
@@ -400,15 +319,13 @@ result.HH$avType <- 'HHNbk - HEXbk - HHRbk'
 # combine both data frames and save it
 result <- rbind(result.H,result.HH)
 
-write.csv(result,paste(dirName,'model.average.fits.Dvalue.csv',sep='/'))
+write.csv(result,'model.average.fits.Dvalue.csv')
 
 # save predict values and AIC values as txt file and as json file
-write.table(prd.fits,paste(dirName,'prd.fits.txt',sep='/'))
-write.table(aic.fits,paste(dirName,'aic.fits.txt',sep='/'))
+write.table(prd.fits,'prd.fits.txt')
+write.table(aic.fits,'aic.fits.txt')
 
-list.save(prd.fits, paste(dirName,'prd.fits.modelSessionBK.json',sep='/'))
-list.save(aic.fits, paste(dirName,'aic.fits.modelSessionBK.json',sep='/'))
-
-}
+list.save(prd.fits, 'prd.fits.modelSessionBK.json')
+list.save(aic.fits, 'aic.fits.modelSessionBK.json')
 
 
