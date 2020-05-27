@@ -1,6 +1,6 @@
 #########################################################
 #########################################################
-# © eRey.ch | bioGIS; erey@biogis.ch
+# @ eRey.ch | bioGIS; erey@biogis.ch
 # created on 2019.11.01
 
 # Geospatial analysis of isotope analysis on a woodcock project
@@ -30,13 +30,13 @@ proj.wgs <- '+proj=longlat +datum=WGS84 +no_defs'
 packages <- c(
   #stat libraries
   'zoo','data.table','IsoriX',
-  
+
   #Spatial libraries
   'foreign','sp','raster','maps','proj4','rgeos','maptools','rgdal','spatial',
-  
+
   #graphics libraries,
   'TeachingDemos','ggplot2','RColorBrewer','extrafont','jpeg','png',
-  
+
   #R libraries
   'telegram.bot','rawr'#'installr'
 )
@@ -54,8 +54,6 @@ for(pkg in packages){print(pkg)
     library(pkg,character.only=T)
   }
 }
-
-
 
 
 # Color ramp for plotting
@@ -111,10 +109,6 @@ sm <- mean(raster::subset(s,c(2:7)))
 s <- stack(s,sm)
 names(s) <- c('hma','h04','h05','h06','h07','h08','h09','amjjas')
 
-
-#plot(s,col=BrBG(255),ext=extent,xlim=c(-25,70),ylim=c(30,85))
-
-
 # save annual hma layer and amjjas layer
 r.ann <- s$hma
 r.mn <- crop(s$amjjas,extent)
@@ -130,10 +124,15 @@ r.forest <- projectRaster(from=r.forest,to=r.mn,res=res(r.mn),crs=CRS(proj.wgs),
 # select the forest cover greater than 20% for the latter analysis
 r.forest[r.forest>100 | r.forest<20] <- NA
 
-
-# plot for control
 plot(r.mn,col=BrBG(255),ext=extent,xlim=c(-25,70),ylim=c(30,85))
 plot(r.forest,add=T,col='grey20',legend=F)
+
+jpegName <- paste(getwd(),'Graphs','Mask_Forest_Europe.jpg',sep='/')
+jpeg(jpegName,1200,1200,units = 'px',quality=100,pointsize=36)
+# plot for control
+plot(r.forest,col='forestgreen',ext=extent,xlim=c(-25,70),ylim=c(30,85),legend=F)
+plot(shp.bdy,col='NA',border='black',add=T)
+dev.off()
 
 # restrict the hma amjjas layer to the pixel with a forest cover > 20%
 r.mn.frt <- mask(r.mn,r.forest)
@@ -163,6 +162,7 @@ dtf <- read.csv('isoscape_2013_2018.csv',sep=';',header=T)
 summary(dtf)
 str(dtf)
 dim(dtf)
+names(dtf)
 
 
 # concatenate values for the group selection in the raster analysis section
@@ -191,19 +191,44 @@ dt$bin.reg <- NA
 # loop through each line of the reclassification matrix, select the values between the intervals fr - to
 # and replace the values in the dt$bin.reg column
 for(i in 1:length(be)){
-  dt[dt$dH_reg/10>rcl$from[i] & dt$dH_reg/10<rcl$to[i],'bin.reg'] <- rcl$becomes[i]}
+  y <- which(dt$dH_reg/10>rcl$from[i] & dt$dH_reg/10<rcl$to[i]);print(length(y))
+  if(length(y)>0){
+    dt[y,'bin.reg'] <- rcl$becomes[i]
+  }
+}
 
-dt[1:10,c('dH_reg','bin.reg')]
 
-# comput proportion of the data in each bin, for control
+dt[1:10,c('dH_reg','bin.reg','MYINDEX')]
+
+# compute proportion of the data in each bin, for control
 dtf.bin <- as.data.frame(table(dt$bin.reg))
 dtf.bin$Prop <- round((dtf.bin$Freq/sum(dtf.bin$Freq))*100,2)
 dtf.bin$CumSum <- cumsum(dtf.bin$Prop)
 dtf.bin
 
 
+# combines data of Kt NE, JU, VD as one dataset for woodcock from Jura mountains
+kt.slct <- c('NE_jgd','VD_jgd')
+for(k in kt.slct){
+  i <- which(dt[,'jgd_ID']==k)
+  dt[i,'jgd_ID'] <- 'JU_jgd'
+}
+
 # create a vector of the groups
-slct <- c('ScoRus','a','j','a_jgd','j_jgd','a_CH','j_CH','TI','CH','jgd')
+slct <- c('ScoRus','a','j','a_jgd','j_jgd','a_CH','j_CH','TI','CH','jgd','JU_jgd')
+
+
+# Import and subset the dem to the alps, re-project to WGS84. To do once, then import the wgs84--projected raster
+
+f.br <- file.path('./BioGeo/Biogeographische Regionen_LV03/biogreg.shp')
+bioreg <- readOGR(f.br,p4s = proj.lv03,encoding = 'latin1',use_iconv = T)
+unique(bioreg$BIOGREG_R6)
+Alp <- subset(bioreg,BIOGREG_C1>=31 & BIOGREG_C1<62)
+Alp.wgs<- spTransform(Alp, CRS(proj.wgs))
+
+demAlp.wgs <- raster('./Isotopes/raster/mnt_Alp_isoscape_wgs84.tif')
+
+write.csv(dt,'N:/PROJETS/externes/OFEV/BECASSE/analyses_isotopes/isoScape/isoscape_2013_2018_Analyze.csv',row.names = F)
 
 
 # 2 loops:
@@ -214,63 +239,66 @@ for(d in slct){
   c <- unique(names(dt)[which(dt == d, arr.ind=T)[, "col"]])
   # find which row has data with the group d in the column c
   i <- which(dt[,c]==d)
-  
+
+
   # select hunt data not in TI, to do MANUALLY
-  # i <- which(dt[,'KT']!='TI' & dt[,'t_PRELE']=='jgd') 
+  # i <- which(dt[,'KT']!='TI' & dt[,'t_PRELE']=='jgd')
   # d <- 'jgd_NO_TI'
-  
+
   # select data with the group d
   dt.slct <- dt[i,]
   n <- length(dt.slct$dH_reg)
-  
+
   # prepare a proportion data frame of the data in each bins
   dtf.bin <- as.data.frame(table(dt.slct$bin.reg))
   dtf.bin$Var1 <- as.numeric(as.character(dtf.bin$Var1))
-  
+
   # complete the bins sequence not to have any missing bin
   full <- seq(1,max(dtf.bin$Var1),1)
   # fill the dtf.bin dataframe with NA values for the missing bins
   dtf.bin <- data.frame('Var1'=full, 'Freq'=with(dtf.bin, dtf.bin$Freq[match(full, dtf.bin$Var1)]))
-  
+
   # compute proportion of data in each bin, and the cumulative sum
   dtf.bin$Prop <- round((dtf.bin$Freq/sum(dtf.bin$Freq,na.rm=T))*100,2)
   dtf.bin$CumSum <- cumsum(ifelse(is.na(dtf.bin$Prop), 0, dtf.bin$Prop)) + dtf.bin$Prop*0
-  
+
   # plot the proportion and cum sum of data in each bins
-  pdfName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'CumSum','bin_Proportion','pdf',sep='.'),sep='/')
-  pdf(pdfName,paper='a4r',width=11,height=8.5)
+  # pdfName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'CumSum','bin_Proportion','pdf',sep='.'),sep='/')
+  jpgName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'CumSum','bin_Proportion','jpg',sep='.'),sep='/')
+  # pdf(pdfName,paper='a4r',width=11,height=8.5)
+  jpeg(jpgName,1600,1200,units = 'px',quality=100,pointsize=36)
   par(mfrow=c(1,1),mar=c(6,5,4,5))
-  plot(dtf.bin$CumSum,type='b',cex=0.5,main=paste(d),ylim=c(0,100),ann=F,axe=F,col='sienna')
+  plot(dtf.bin$CumSum,type='b',cex=0.5,lwd=3,main=paste(d),ylim=c(0,100),ann=F,axe=F,col='sienna')
   mtext("Proportion cumulée [%]", side=2, line=3,cex=1.2,col="sienna")
-  mtext(paste('Proportion of data in the bins, n =',length(i),sep=' '),side = 3, line = 1)
+  mtext(paste('Proportion de données dans les bins, n =',length(i),sep=' '),side = 3, line = 1)
   box(col='grey')
   axis(2,cex.axis=1,col.axis='sienna',col='sienna')
   axis(1,at=c(min(index(dtf.bin$Var1)):max(index(dtf.bin$Var1))),
        labels=c(min(as.numeric(as.character(dtf.bin$Var1))):max(as.numeric(as.character(dtf.bin$Var1)))),
        las=3, cex.axis=1,col.axis='grey30',col='grey30')
   par(new=T)
-  plot(dtf.bin$Prop,type='h',col='tomato',ann=F,axe=F)
+  plot(dtf.bin$Prop,type='h',col='tomato',ann=F,axe=F,lwd=3)
   mtext("Proportion [%]", side=4, line=3,cex=1.2,col="tomato")
   axis(4,cex.axis=1,col.axis='tomato',col='tomato')
   dev.off()
-  
-  
+
+
   # get the 1st and 3rd quantile of dH_reg of the d group
   qtl.1 <- quantile(dt.slct$dH_reg,.25)
   qtl.3 <- quantile(dt.slct$dH_reg,.75)
-  
+
   # find the rows where dH_reg is between the 1st and 3rd quantile
   i <- which(dt.slct$dH_reg<qtl.1 | dt.slct$dH_reg>qtl.3)
-  
+
   # create a new column for aggregating the 1 -> 3 quantile values
   # dt.slct[i,c('bin.reg','bin.agg')] <- 'NA'
   dt.slct[-i,'bin.agg'] <- 'binAGG'
   head(dt.slct)
-  
-  
+
+
   # create a vector with the bin and aggregated data
   slct.bin <- c('binAGG',sort(unique(dt.slct$bin.reg)))
-  
+
   # reclassify the raster values with a probability based on the Mean +- 2*Standard deviation
   for(b in slct.bin){
     # print(b)
@@ -279,63 +307,63 @@ for(d in slct){
       c <- unique(names(dt.slct)[which(dt.slct == b, arr.ind=T)[, "col"]])
       # find which row has data with the bin b in the column c
       i <- which(dt.slct[,c]==b)
-      
+
       # compute mean value, standard deviation e and interval et of the dH_reg values in the bin b
       m <- mean(dt.slct[i,'dH_reg'])
       e <- sd(dt.slct[i,'dH_reg'])
       et <- 2*e
-      
+
       # compute the proportion of datas used for this map (length(dt[i,'dH_reg'])) in the group d (n)
       propValue <- round((length(dt[i,'dH_reg'])/n)*100,2)
-      
-      
+
+
       # check if standard deviation is not NA, else pass to another bin
       if(!is.na(e)){
-        # set minimal and maximal value for the reclassification matrix, if m+SD < min(value of the raster), 
+        # set minimal and maximal value for the reclassification matrix, if m+SD < min(value of the raster),
         # the classification matrix will have crossed values
         if((m-et)<r.mn@data@min){minValue <- floor(r.mn@data@min)} else {minValue <- floor(m-et)}
         if((m+et)>r.mn@data@max){maxValue <- ceiling(r.mn@data@max)} else {maxValue <- floor(m+et)}
-        
+
         # control interval values to pass to the next step
         if(minValue<(m+et) & maxValue>(m-et) & minValue != maxValue){
           # print the bin, mean and sd value
           print(paste(b, m, e,sep='...-...'))
-          
+
           # get the interval value for the reclassification matrix
           itl<-abs((minValue-maxValue)/253)
-          
+
           # get initial values of the reclassification interval
           r.from <- seq(minValue,maxValue,itl)
           r.from <- c(floor(r.mn@data@min), r.from)
-          
+
           # get final value of the reclassification interval
           r.to <- seq(minValue+itl,maxValue+itl,itl)
           r.to <- c(r.to, ceiling(r.mn@data@max))
-          
+
           # get a probability vector rangin from 0 -- 1 -- 0 on a 255 steps. Many steps will give a finer color ramp on the raster
           r.becomes <- c(seq(from=0,to=0.999,by=1/127),1,rev(seq(from=0,to=0.999,by=1/127)))
-          
+
           # check the length of each vector
           length(r.from);length(r.to);length(r.becomes)
-          
+
           # make the reclassification matrix
           rcl <- data.frame(from=r.from,to=r.to ,becomes= r.becomes)
           rcl
-          
+
           # reclassify the raster layer of hma amjjas masked with the forest using the reclassification matrix, save as GTIFF
           rasterName <- paste(getwd(),'raster',paste('ho49',d,b,'tif',sep='.'),sep='/')
           r <- reclassify(r.mn.frt,as.matrix(rcl),format='GTiff',filename=rasterName,overwrite=T)
-          
+
           # set probability = 0 to NA for mapping
           r[r==0] <- NA
-          
+          writeRaster(r, format='GTiff',filename=rasterName,overwrite=T)
           # plot the raster and save as jpeg
           jpgName <- paste(getwd(),'Graphs',paste('isotope','reg','CHsubplot',d,'bin',b,'jpg',sep='.'),sep='/')
           jpeg(jpgName,1200,1200,units = 'px',quality=100,pointsize=36)
-          
+
           # pdfName <- paste(getwd(),'Graphs',paste('isotope','reg',d,'bin',b,'pdf',sep='.'),sep='/')
           #pdf(pdfName,paper='a4r',width=11,height=8.5)
-          
+
           # plot the reclassified - probability of origin of the woodcock, add countries and ocean for clarity and orientation
           plot(r,ext=extent,
                col=ScoRusRamp(255),
@@ -351,74 +379,59 @@ for(d in slct){
                   'bottomright',size=c(3,3))
           dev.off()
 
-          
+          alpExtract <- mask(r,Alp.wgs)
+          alpPoly <- rasterToPolygons(alpExtract,dissolve=F)
+
+          if(!is.null(alpPoly)){
+            alpAlt <- mask(demAlp.wgs,alpPoly)
+
+            s.xy <- xyFromCell(alpAlt,c(1:ncell(alpAlt)))
+            s.dt <- extract(alpAlt,s.xy)
+            s.dt <- as.data.frame(summary(s.dt))
+
+            dataName <- paste(getwd(),'Graphs',paste('isotope','reg','CHsubplot',d,'bin',b,'csv',sep='.'),sep='/')
+            write.csv(s.dt,dataName)
+            }
+          }
         }
       }
     }
   }
-}
 
 
-#####################################################################
-#####################################################################
-# Proportion of origin of woodcock
-#####################################################################
-#####################################################################
 
-# MANUALLY SELECT THE GROUPS CH AND jgd and run each round once, 
-# after the first round CH; save m, e, et and n in the ith.CH vector
-itl.CH <- c(m,e,et,n)
-
-# after the first round jgd; save m, e, et and n in the ith.jgd vector
-itl.jgd <- c(m,e,et,n)
-
-# convert to a dataframe, and bind both vectors
-itl.CH <- as.data.frame(t(data.frame(itl.CH)))
-itl.jgd <- as.data.frame(t(data.frame(itl.jgd)))
-names(itl.jgd) <- names(itl.CH)
-itl <- rbind(itl.CH,itl.jgd)
-rownames(itl) <- c('CH','jgd')
+colKeep <- c('sp','t_PRELE','lon','lat','cz','ID','AGE','dC','dN','dH_correct','ORIGINE','KT', 'source_ID','ORIG_ID','jgd_ID')
+dt <- dtf[,colKeep]
+head(dt)
+t(dt[1,])
 
 
-# compute a reclassification matrix using the mean sd and interval to categorize the origins
-fr <- c(itl['CH','m']-itl['CH','et'],
-        floor(min(dt$dH_reg)),
-        itl['jgd','m']+itl['jgd','et'],
-        itl['CH','m']+itl['CH','et'])
-to <- c(itl['CH','m']+itl['CH','et'],
-        itl['jgd','m']+itl['jgd','et'],
-        itl['CH','m']-itl['CH','et'],
-        ceiling(max(dt$dH_reg)))
-be <- c('CH','SC','CH_SC','wEU')
-rcl <- data.frame(from=fr, to=to,becomes = be);rcl
-dt$orig <- NA
-
-# loop through each line of the reclassification matrix, select the values between the intervals fr - to
-# and replace the values in the dt$orig column
-
-for(i in 1:length(be)){
-  dt[dt$dH_reg>rcl$from[i] & dt$dH_reg<rcl$to[i],'orig'] <- as.character(rcl$becomes[i])
-}
+i <- which(dt$ORIGINE=='CH')
+plot(dt$dN~dt$dH_correct,pch=16)
+points(dt[i,'dN']~dt[i,'dH_reg'],col='tomato',pch=16)
 
 
-# plot each origin for control
-i <- which(dt$orig=='CH')
-plot(dt[i,'dH_reg'],col='tomato',cex=0.5,ylim=c(-135,0))
+qtl.1 <- quantile(dt$dC,.05,na.rm=T)
+qtl.3 <- quantile(dt$dC,.95,na.rm=T)
 
-i <- which(dt$orig=='SC')
-points(dt[i,'dH_reg'],col='steelblue',cex=0.5)
+i <- which(dt$dC>qtl.1 & dt$dC<qtl.3)
+dt.slct <- dt[i,]
 
-i <- which(dt$orig=='CH_SC')
-points(dt[i,'dH_reg'],col='orange',cex=0.5)
+p <- ggplot(data = dt.slct, aes(dt.slct$dC, dt.slct$dN, color = dt.slct$dH_correct)) +
+  geom_point(size=5) +
+  scale_color_gradientn(colours=BrBG(8),
+                        limits=c(floor(min(dt.slct$dH_correct)),
+                                 ceiling(max(dt$dH_correct))))+
+  theme_bw(base_size = 12, base_family = "Calibri Light")+
+  labs(title = 'Graphe des isotopes, Bécasse des bois',
+       subtitle = paste('n','=', length(dt.slct$dC),sep=' '),
+       x = 'Carbone [d13C]',
+       y = 'Azote [d15N]',
+       color = 'Deuterium [d2H]',
+       caption = 'data @ infoFauna | 2013-2018')
 
-i <- which(dt$orig=='wEU')
-points(dt[i,'dH_reg'],col='limegreen',cex=0.5)
+jpgName <- paste(getwd(),'Graphs',paste('isotope','d15N','d13C','d2H','jpg',sep='.'),sep='/')
+jpeg(jpgName,1200,1200,units = 'px',quality=100,pointsize=36)
+print(p)
+dev.off()
 
-boxplot(dt$dH_reg~dt$orig)
-
-# get cross table (frequency for each value of dt$orig) and save it to a dataframe
-dtf.orig <- as.data.frame(table(dt$orig))
-dtf.orig$Prop <- round((dtf.orig$Freq/sum(dtf.orig$Freq))*100,2)
-dtf.orig$CumSum <- cumsum(dtf.orig$Prop)
-dtf.orig
-write.csv(dtf.orig,'prob_orig_ScoRus.csv')
