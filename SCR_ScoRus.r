@@ -28,26 +28,26 @@ proj <- '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +
 packages <- c(
   #CMR libraries
   'openCR','mra','Rcapture','multimark','secr',
-  
+
   #habitat selection libraries
   'ade4','adehabitatLT','adehabitatHR','adehabitatHS','adehabitatMA',
-  
+
   #stat libraries
   'lattice','permute','reshape','zoo','miscTools','data.table',
-  
+
   #Spatial libraries
   'foreign','sp','plotrix','raster','maps','proj4','rgeos',
   'maptools','rgdal','spatial','Rcpp',
-  
+
   #Looping libraries
   'foreach','iterators','parallel','doParallel',
-  
+
   #graphics libraries
   'ggplot2','RColorBrewer','jpeg','png',
-  
+
   #R libraries
-  'devtools','telegram.bot','rlist'
-)
+  'devtools','telegram.bot'
+  )
 
 
 # Check if library exist, install and/or update and activate it
@@ -236,7 +236,7 @@ fit.HNbk <- secr.fit(captdata,
                      detectfn = 'HN', 
                      trace = T, 
                      model = list(D~Session,g0 ~ bk)
-)
+                     )
 
 fit.HHNbk <- secr.fit(captdata,
                       mask = clippedMask, 
@@ -244,7 +244,7 @@ fit.HHNbk <- secr.fit(captdata,
                       detectfn = 'HHN', 
                       trace = T, 
                       model = list(D~Session,g0 ~ bk)
-)
+                      )
 
 fit.EXbk <- secr.fit(captdata,
                      mask = clippedMask, 
@@ -252,7 +252,7 @@ fit.EXbk <- secr.fit(captdata,
                      detectfn = 'EX', 
                      trace = T, 
                      model = list(D~Session,g0 ~ bk)
-)
+                     )
 
 fit.HEXbk <- secr.fit(captdata,
                       mask = clippedMask, 
@@ -260,7 +260,7 @@ fit.HEXbk <- secr.fit(captdata,
                       detectfn = 'HEX', 
                       trace = T, 
                       model = list(D~Session,g0 ~ bk)
-)
+                      )
 
 fit.HRbk <- secr.fit(captdata,
                      mask = clippedMask, 
@@ -268,7 +268,7 @@ fit.HRbk <- secr.fit(captdata,
                      detectfn = 'HR', 
                      trace = T, 
                      model = list(D~Session,g0 ~ bk)
-)
+                     )
 
 fit.HHRbk <- secr.fit(captdata,
                       mask = clippedMask, 
@@ -276,7 +276,7 @@ fit.HHRbk <- secr.fit(captdata,
                       detectfn = 'HHR', 
                       trace = T, 
                       model = list(D~Session,g0 ~ bk)
-)
+                      )
 
 
 #create a secr list with all detection functions modelling
@@ -327,5 +327,3 @@ write.table(aic.fits,'aic.fits.txt')
 
 list.save(prd.fits, 'prd.fits.modelSessionBK.json')
 list.save(aic.fits, 'aic.fits.modelSessionBK.json')
-
-
