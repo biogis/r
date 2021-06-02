@@ -41,7 +41,13 @@ for(pkg in packages){print(pkg)
 
 
 
-#choose working directory with all wav files
+### Check the desire elevation model under
+# https://www.swisstopo.admin.ch/fr/geodata/height.html
+
+### Download the csv file from the swisstopo website with the url to the zip files (1 zip file per km2)
+
+
+#choose working directory with csv file -- metadata with .zip url
 in.dir <- choose.dir(caption = "Select input folder")
 
 #choose copying directory
@@ -49,11 +55,6 @@ out.dir <- choose.dir(caption = "Select output folder")
 
 setwd(out.dir)
 
-
-### Check the desire elevation model under
-# https://www.swisstopo.admin.ch/fr/geodata/height.html
-
-### Download the csv file from the swisstopo website with the url to the zip files (1 zip file per km2)
 ### open metadata file with download url
 
 csvName <- file.choose()
