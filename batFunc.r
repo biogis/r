@@ -45,8 +45,8 @@ bat_pks <- function (x, m = 3){
 }
 
 
-
 bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
+  start.1 <- Sys.time();start.1
   a <- try(readWave(f),silent=T)
   if(class(a)!='try-error'){
     if(length(a@left)>0){
@@ -84,9 +84,10 @@ bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
       dt$amp[1:10,1:10] # check matrix
       return(dt)
     }
-  } else cat('This is not a sound file')
+  } else {
+    cat('This is not a sound file')
+  }
 }
-
 
 # dt <- bat(f)
 # str(dt)
