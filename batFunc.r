@@ -5,6 +5,8 @@
 # modified on 2021.11.08
 #source('./batFunc.r')
 # https://github.com/biogis/r/blob/master/batFunc.r
+# source('https://raw.githubusercontent.com/biogis/r/master/batFunc.r')
+
 
 ###########################################################
 ###########################################################
