@@ -249,7 +249,7 @@ batlab <- function(f){
       lab10 <- floor(seq(0,fH.half,by=5000)/1000)
       brks <- seq(0, fH.half, by=2000)
       dur <- length(a@left)/fH
-      print(fH)
+      # print(fH)
       ticks <- list('lab10' = lab10, 
                     'brks' = brks, 
                     'dur' = dur)
