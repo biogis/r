@@ -207,7 +207,7 @@ statBat <- function(f, dt){
         i.l <- (i-1)*256
         i.r <- (i*256)
         wav.per <- wav[i.l:i.r]
-        pks <- find_peaks(wav.per)
+        pks <- bat_pks(wav.per)
         period <- which(wav[pks]>0)
         per <- c(per, length(period))
         # 
