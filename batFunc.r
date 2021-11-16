@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2018.06.18
-# modified on 2021.11.08
+# modified on 2021.11.16
 #source('./batFunc.r')
 # https://github.com/biogis/r/blob/master/batFunc.r
 # source('https://raw.githubusercontent.com/biogis/r/master/batFunc.r')
@@ -10,6 +10,50 @@
 
 ###########################################################
 ###########################################################
+
+# 
+# start <- Sys.time();start
+# #choose working directory with all wav files
+# # in.dir <- choose.dir(caption = "Select input wav folder")
+# in.dir <- '/home/erey/Documents/wav/wavTOP/'
+# 
+# #choose copying directory
+# # out.dir <- choose.dir(caption = "Select output wav folder")
+# out.dir <- '/home/erey/Documents/wav/wavTest/'
+# 
+# setwd(in.dir)
+# 
+# 
+# fn.f <- file.path(in.dir)
+# fns <- list.files(fn.f,pattern='.wav$',all.files=T,full.names=T,recursive=T,include.dirs=T) # store all wave files in the working directory
+# print(length(fns))
+# 
+# f <- fns[11]
+# 
+# 
+# 
+# system.time(dt <- bat(f))
+# 
+# system.time(dt <- cleanBat(dt))
+# 
+# 
+# system.time(L <- statBat(dt))
+# 
+# 
+# system.time(batFinder(f, L, '~/Documents/wav/wavTest'))
+# 
+# 
+# system.time(tk <- batlab(f))
+# 
+# 
+# system.time(pp <- control(f, dt, L, out.dir))
+# 
+# 
+# system.time(graph(f, dt, L, pp, out.dir))
+# end <- Sys.time();end
+# end-start
+# 
+# #############################################33
 
 require(tuneR)
 require(seewave)
@@ -25,6 +69,7 @@ BrBG <- colorRampPalette(c('#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#f
 cbbPalette <- colorRampPalette(c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
 spectral.colors <- colorRampPalette(c('red3','darkblue','gold2','limegreen','green4'))
 discret <- colorRampPalette(c('tomato','steelblue','gold','limegreen','darkorchid3'))
+# cb <- colorRampPalette('#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000')
 elevRamp <- colorRampPalette(c('#aff0e9','#ffffb3','#008040','#fcba03','#780000','#69300d','#ababab','#fffcff'))
 ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#780000','#69300d', '#fe7c97', '#680459'))
 
@@ -43,6 +88,7 @@ bat_pks <- function (x, m = 3){
   pks <- unlist(pks)
   pks
 }
+
 
 
 bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
@@ -89,6 +135,7 @@ bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
   }
 }
 
+
 # dt <- bat(f)
 # str(dt)
       
@@ -134,7 +181,67 @@ cleanBat <- function(dt){
 # dt <- cleanBat(dt)
 
 
-statBat <- function(dt){
+statBat <- function(f, dt){
+  a <- try(readWave(f),silent=T)
+  if(class(a)!='try-error'){
+    if(length(a@left)>0){
+      # cat(basename(f), '\n')
+      
+      #open wav file:
+      # a <- readWave(fns[15])
+      a <- readWave(f)
+      
+      #save oscillo data
+      wav <- a@left;length(wav)
+      
+      #set the length of the moving window
+      per <- 256
+      
+      #set the amount of windows
+      wdw <- length(wav)/per
+      
+      per <- c()
+      # plot(wav, type='l')
+      for(i in 1:wdw){
+        # cat(i, '\n')
+        i.l <- (i-1)*256
+        i.r <- (i*256)
+        wav.per <- wav[i.l:i.r]
+        pks <- find_peaks(wav.per)
+        period <- which(wav[pks]>0)
+        per <- c(per, length(period))
+        # 
+        # for(y in 1:(length(wav.per)-1)){
+        #   if((wav.per[y]-wav.per[y+1])<0 & wav.per[y]<0){print(wav.per[y])} 
+        # }
+        # points(wav.per,type='l', color='tomato')
+      }
+      
+      mn <- mean(per, na.rm=T, digits = 4)
+      md <- median(per, na.rm=T,  digits = 4)
+      q05 <- as.numeric(quantile(per, probs=0.05, na.rm=T,  digits = 4))
+      q25 <- as.numeric(quantile(per, probs=0.25, na.rm=T,  digits = 4))
+      q75 <- as.numeric(quantile(per, probs=0.75, na.rm=T,  digits = 4))
+      q95 <- as.numeric(quantile(per, probs=0.95, na.rm=T,  digits = 4))
+      sdPer <- sd(per, na.rm=T)
+      
+      ProdVal <- mn*sdPer
+      DivVal <- 100*(sdPer/mn)
+
+      dt.per <- data.frame('filename' = basename(f),
+                           'q05Period' = q05,
+                           'q25Period' = q25,
+                           'MeanPeriod' = mn,
+                           'MedianPeriod' = md,
+                           'q75Period' = q75,
+                           'q95Period' = q95,
+                           'SDPeriod' = sdPer,
+                           'ProdVal' = ProdVal,
+                           'DivVal' = DivVal)
+    }
+  }
+  
+      
   row <- dt$freq # prepare new rownames with frequencies
   col <- dt$time # prepare new colnames with time
   
@@ -175,22 +282,33 @@ statBat <- function(dt){
     #              dt$freq>75 & dt$freq<85 | # Look for rFe in freq range 75 to 85 kHz
     #              dt$freq>100 & dt$freq<110) # Look fir rHi in freq range 100 to 110 kHz
     
-    nse <- median(dt$amp[i,],na.rm=T)
-    pks$snr_nse <- (pks$amp/nse)^2
+    pks$nse <- median(dt$amp[i,],na.rm=T)
+    pks$snr_nse <- (pks$amp/pks$nse)^2
     pks[which(is.na(pks$snr_nse)),'snr_nse'] <- 9999
     rms.tot.filt
     pks$snr_rms <- pks$amp/rms.tot.filt
     pks[which(is.na(pks$snr_rms)),'snr_rms'] <- 9999
-    pks} else if (length(pks$freq)>0 & slp<=0) {
+    pks} else if (length(pks$freq)>0 & slp>=0) {
       pks$snr_nse <- NA
       pks$snr_rms <- NA
     } else if (is.null(pks$freq)){
       pks <- data.frame('freq'=NA,
                         'amp'=NA,
                         'rms'=NA,
+                        'nse'=NA,
                         'snr_nse'=NA,
                         'snr_rms'=NA)
     }
+  
+  dt.per$R2 <- R2
+  dt.per$slp <- slp
+  dt.per$rms <- unique(pks$rms)
+  dt.per$rms.tot.filt <- rms.tot.filt
+  dt.per$nse <- unique(pks$nse)
+  dt.per$snr_nse <- median(pks$snr_nse, na.rm=T)
+  dt.per$snr_rms <- median(pks$snr_rms, na.rm=T)
+  dt.per$PeakAmp <- median(pks$amp, na.rm=T)
+  
   
   resultList <- list('mean.mod' = mean.mod,
                      'specSum' = specSum, 
@@ -198,7 +316,9 @@ statBat <- function(dt){
                      'dtf.freq' = dtf.freq,
                      'pwr' = pwr,
                      'pks' = pks,
-                     'slp' = slp)
+                     'slp' = slp,
+                     'R2' = R2,
+                     'dt.per' = dt.per)
   return(resultList)
 }
 
