@@ -15,11 +15,9 @@
 # start <- Sys.time();start
 # #choose working directory with all wav files
 # # in.dir <- choose.dir(caption = "Select input wav folder")
-# in.dir <- '/home/erey/Documents/wav/wavTOP/'
 # 
 # #choose copying directory
 # # out.dir <- choose.dir(caption = "Select output wav folder")
-# out.dir <- '/home/erey/Documents/wav/wavTest/'
 # 
 # setwd(in.dir)
 # 
@@ -91,7 +89,7 @@ bat_pks <- function (x, m = 3){
 
 
 
-bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
+bat <- function(f, wl=1024, ovlp=50, wn='hamming', zp=64, fr=8000, to=150000){
   start.1 <- Sys.time();start.1
   a <- try(readWave(f),silent=T)
   if(class(a)!='try-error'){
@@ -104,16 +102,10 @@ bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
       
       a <- readWave(f)
       # str(a)
-      wl <- 1024
-      ovlp <- 50
       wl.half <- wl/2
       fH <- a@samp.rate
       fH.half <- fH/2
       dur <- length(a@left)/fH
-      wn <- 'hamming'
-      zp <- 64
-      fr <- 8000
-      to=150000
       
       a.filt <- fir(a, from = fr, to = to)
       dt <- seewave::spectro(a.filt, f=fH, wn=wn, ovlp=ovlp, wl=wl, zp=zp, plot=F)#compute fft of the wav file
@@ -127,7 +119,7 @@ bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
       rownames(dt$amp) <- row # rename rows with frequencies values
       colnames(dt$amp) <- col # rename columns with time values
       
-      dt$amp[1:10,1:10] # check matrix
+      # dt$amp[1:10,1:10] # check matrix
       return(dt)
     }
   } else {
@@ -141,7 +133,7 @@ bat <- function(f, wl=1024, ovl=50, wn='hamming', zp=64, fr=8000, to=150000){
       
 
 cleanBat <- function(dt){
-      #Signal Finder, for each frequency band, substract the 50% quantile and select the values > than 10% above the mean, else set as NA
+      # Clean Signal, for each frequency band, substract the 50% quantile and select the values > than 10% above the mean, else set as NA
   row <- dt$freq # prepare new rownames with frequencies
   col <- dt$time # prepare new colnames with time
   rms.tot.unfilt <- -(sqrt(mean(dt$amp^2,na.rm=T)));rms.tot.unfilt
@@ -188,33 +180,27 @@ statBat <- function(f, dt){
       # cat(basename(f), '\n')
       
       #open wav file:
-      # a <- readWave(fns[15])
       a <- readWave(f)
       
       #save oscillo data
       wav <- a@left;length(wav)
       
       #set the length of the moving window
-      per <- 256
+      movWD <- 256
       
       #set the amount of windows
-      wdw <- length(wav)/per
+      wdw <- length(wav)/movWD
       
       per <- c()
       # plot(wav, type='l')
       for(i in 1:wdw){
         # cat(i, '\n')
-        i.l <- (i-1)*256
-        i.r <- (i*256)
+        i.l <- (i-1)*movWD
+        i.r <- (i*movWD)
         wav.per <- wav[i.l:i.r]
         pks <- bat_pks(wav.per)
         period <- which(wav[pks]>0)
         per <- c(per, length(period))
-        # 
-        # for(y in 1:(length(wav.per)-1)){
-        #   if((wav.per[y]-wav.per[y+1])<0 & wav.per[y]<0){print(wav.per[y])} 
-        # }
-        # points(wav.per,type='l', color='tomato')
       }
       
       mn <- mean(per, na.rm=T, digits = 4)
@@ -278,9 +264,6 @@ statBat <- function(f, dt){
                  dt$freq > 85 & dt$freq < 100 |
                  dt$freq > 120) # low and high pass filter
     pks$rms <- -(sqrt(mean(pks$amp^2,na.rm=T)));pks
-    # i <- which(dt$freq>10 & dt$freq<60 | # Look for any bat in freq range 10 to 60 kHz
-    #              dt$freq>75 & dt$freq<85 | # Look for rFe in freq range 75 to 85 kHz
-    #              dt$freq>100 & dt$freq<110) # Look fir rHi in freq range 100 to 110 kHz
     
     pks$nse <- median(dt$amp[i,],na.rm=T)
     pks$snr_nse <- (pks$amp/pks$nse)^2
@@ -318,7 +301,7 @@ statBat <- function(f, dt){
                      'pks' = pks,
                      'slp' = slp,
                      'R2' = R2,
-                     'dt.per' = dt.per)
+                     'dt.wav' = dt.per)
   return(resultList)
 }
 
