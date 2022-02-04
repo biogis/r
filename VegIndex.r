@@ -70,9 +70,13 @@ elevRamp <- colorRampPalette(c('#aff0e9','#ffffb3','#008040','#fcba03','#780000'
 ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#780000','#69300d', '#fe7c97', '#680459'))
 
 
-in.dir <- 'YOUR DIRECTORY WITH DRONE ORTHOIMAGES'
+# choose working directory with all orthoimages
+in.dir <- choose.dir(caption = "Select input tif folder")
 
-out.dir <- 'YOUR DIRECTORY WITH VEG INDEX ORTHOPHOTOS'
+# choose output directory
+out.dir <- choose.dir(caption = "Select output wav folder")
+
+setwd(in.dir)
 
 # list all .tif files in your orthoimage directory
 fns <- list.files(in.dir, patter='.tif$'); print(fns)
