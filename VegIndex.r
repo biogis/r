@@ -78,8 +78,7 @@ out.dir <- choose_dir(caption = "Select output wav folder")
 # wgs84: 4326
 # Lambert 93: 2154
 
-epsg <- as.numeric(dlgInput("Enter an epsg number for reprojection:\n # CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res)
-
+epsg <- dlgInput("Enter an epsg number for reprojection\nor NA if no reprojection is required:\n# CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res
 #############################################################################
 ########################## -- LET IT RUN - PART -- ##########################
 #############################################################################
@@ -119,7 +118,7 @@ for(i in 1:length(fns)){
   # else replace on the raster stack:
   r[r==max(values(r))] <- NA
   
-  if(exists('epsg')){
+  if(!is.na(epsg)){
     cat('re-project to the swiss coordinate system\t',proj,'\t')
     proj <- paste0('+init=epsg:', epsg)
     r <- project(r, proj, method='bilinear', filename=file.path(in.dir,f.prj), overwrite=T)
