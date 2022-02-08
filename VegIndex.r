@@ -136,8 +136,8 @@ for(i in 1:length(fns)){
   r[r==max(values(r))] <- NA
 
   if(!is.na(epsg)){
-    cat('re-project to the swiss coordinate system\t',p,'\t')
     p <- paste0('+init=epsg:', epsg)
+    cat('re-project to the swiss coordinate system\t',p,'\n')
     r <- project(r, p, method='bilinear', filename=file.path(in.dir,f.prj), overwrite=T)
   }
 
