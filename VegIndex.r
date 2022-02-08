@@ -5,7 +5,7 @@
 # modified on 2022.02.08
 #source('./vegIndex.r')
 # https://github.com/biogis/r/blob/master/vegIndex.r
-# source('https://raw.githubusercontent.com/biogis/r/master/vegIndex.r')
+# source('https://raw.githubusercontent.com/biogis/r/master/VegIndex.r')
 
 
 ###########################################################
