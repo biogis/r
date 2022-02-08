@@ -63,14 +63,13 @@ ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#78000
 
 # Initiate the bot session using the token from the enviroment variable.
 # bot <- Bot(token = 'YOUR.TOKEN.FROM.TELEGRAM.BOT.FATHER')
-bot <- Bot(token = '716214310:AAFIVH9QOmYOWb6FvDQYjTHGuP4GnYCtDg8')
 
 
 # choose working directory with all orthoimages
 in.dir <- choose_dir(caption = "Select input tif folder")
 
 # choose output directory
-out.dir <- choose_dir(caption = "Select output wav folder")
+out.dir <- choose_dir(caption = "Select output tif folder")
 
 
 #get CRS for a reprojection of the raster using the EPSG code. See on epsg.io for more informations
@@ -79,7 +78,10 @@ out.dir <- choose_dir(caption = "Select output wav folder")
 # wgs84: 4326
 # Lambert 93: 2154
 
+#If no reprojection is required, enter NA
+
 epsg <- dlgInput("Enter an epsg number for reprojection\nor NA if no reprojection is required:\n# CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res
+
 #############################################################################
 ########################## -- LET IT RUN - PART -- ##########################
 #############################################################################
@@ -103,11 +105,11 @@ for(i in 1:length(fns)){
   f <- fns[i]
   f.prj <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'ch.tif', sep='_')
   g <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'VegIndex.tif', sep='_')
-  cat('Working on:\n', '\tinput file:\t\t', f, '\n ', '\toutput File:\t\t', g, '\n','\treprojected file:\t',f.prj)
-  
+  cat('Working on:\n', '\tinput file:\t\t', f, '\n ', '\toutput File:\t\t', g, '\n','\treprojected file:\t',f.prj,'\n')
+
   # file path to the raster
   fnr <- file.path(in.dir, f)
-  
+
   cat('open the ortho-image\n')
   r <- rast(fnr)
   
