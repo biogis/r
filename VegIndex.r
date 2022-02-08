@@ -3,7 +3,8 @@
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2022.01.31
 # modified on 2022.02.08
-# url <- https://github.com/biogis/r/blob/master/vegIndex.r
+# https://github.com/biogis/r/blob/master/vegIndex.r
+# url <- 'https://raw.githubusercontent.com/biogis/r/master/VegIndex.r'
 # source('./vegIndex.r')
 # source(url)
 ###########################################################
