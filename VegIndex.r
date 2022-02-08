@@ -101,9 +101,8 @@ for(i in 1:length(fns)){
   # file path to the raster
   fnr <- file.path(in.dir, f)
 
-  cat('open the orthoimage\n')
+  cat('open the ortho-image\n')
   r <- rast(fnr)
-  
   
   # Check orthoimage
   plotRGB(r, stretch="lin")
@@ -113,6 +112,8 @@ for(i in 1:length(fns)){
   # else replace on the raster stack:
   r[r==max(values(r))] <- NA
   
+  cat('re-project to the swiss coordinate system [lv95 -- epsg::2056]\n')
+  r <- project(r, lv95, method='bilinear', filename=file.path(in.dir,f95), overwrite=T)
   
   # check image again, it should be a correct rgb image
   plotRGB(r, stretch="lin")
