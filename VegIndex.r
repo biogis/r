@@ -24,8 +24,8 @@ packages <- c(
   #graphics libraries
   'RColorBrewer','jpeg','png',
 
-#  #Looping libraries
-#  'foreach','iterators','parallel','doParallel',
+  #Looping libraries
+  'foreach','iterators','parallel','doParallel',
 
   #R libraries
   'telegram.bot','tcltk','svDialogs'
@@ -61,13 +61,13 @@ ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#78000
 
 
 
-# # Define how many cores you want to use
-# UseCores <- detectCores() -1
+# Define how many cores you want to use
+UseCores <- detectCores() - 5
 # # UseCores <- 10
 
-# # Register CoreCluster
-# cl       <- makeCluster(UseCores, outfile="")
-# registerDoParallel(cl)
+# Register CoreCluster
+cl       <- makeCluster(UseCores, outfile="")
+registerDoParallel(cl)
 
 
 #############################################################################
@@ -113,9 +113,9 @@ i <- 3
 f <- fns[i]
 
 
-# foreach(i=1:length(fns)) %dopar% {
-#   library(terra)
-for(i in 1:length(fns)){
+foreach(i=1:length(fns)) %dopar% {
+  library(terra)
+# for(i in 1:length(fns)){
   f <- fns[i]
   f.prj <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'ch.tif', sep='_')
   g <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'VegIndex.tif', sep='_')
