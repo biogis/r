@@ -3,11 +3,9 @@
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2022.01.31
 # modified on 2022.02.08
-#source('./vegIndex.r')
-# https://github.com/biogis/r/blob/master/vegIndex.r
-# source('https://raw.githubusercontent.com/biogis/r/master/VegIndex.r')
-
-
+# url <- https://github.com/biogis/r/blob/master/vegIndex.r
+# source('./vegIndex.r')
+# source(url)
 ###########################################################
 ###########################################################
 
@@ -16,21 +14,6 @@
 Sys.setenv(TZ='Europe/Paris')
 # clear all objects saved in the R session
 rm(list=ls())
-
-#get proj4 for LV03 or LV95 for any projection map or spatial analysis requireng a projection
-# CH1903_lv03
-lv03 = "+init=epsg:21781"
-# lv03 <- CRS(SRS_string='EPSG:21781')
-
-#CH1903_LV95
-lv95 = "+init=epsg:2056"
-# lv95 <- CRS(SRS_string='EPSG:2056')
-
-#wgs84:
-wgs84 = "+init=epsg:4326"
-# wgs84 <- CRS(SRS_string='EPSG:4326')
-
-
 
 
 packages <- c(
@@ -41,7 +24,7 @@ packages <- c(
   'RColorBrewer','jpeg','png',
 
   #R libraries
-  'telegram.bot','tcltk'
+  'telegram.bot','tcltk','svDialogs'
 )
 
 # Check if library exist, install and/or update and activate it
@@ -66,14 +49,20 @@ choose_dir  <-  function(caption = 'Select data directory') {
   }
 }
 
-# Initiate the bot session using the token from the enviroment variable.
-# bot <- Bot(token = 'YOUR.TOKEN.FROM.TELEGRAM.BOT.FATHER')
-
 
 # Color ramp for plotting
 BrBG <- colorRampPalette(c('#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e','#003c30'))
 elevRamp <- colorRampPalette(c('#aff0e9','#ffffb3','#008040','#fcba03','#780000','#69300d','#ababab','#fffcff'))
 ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#780000','#69300d', '#fe7c97', '#680459'))
+
+
+#############################################################################
+############################# -- INPUT - PART -- ############################
+#############################################################################
+
+# Initiate the bot session using the token from the enviroment variable.
+# bot <- Bot(token = 'YOUR.TOKEN.FROM.TELEGRAM.BOT.FATHER')
+bot <- Bot(token = '716214310:AAFIVH9QOmYOWb6FvDQYjTHGuP4GnYCtDg8')
 
 
 # choose working directory with all orthoimages
@@ -82,6 +71,20 @@ in.dir <- choose_dir(caption = "Select input tif folder")
 # choose output directory
 out.dir <- choose_dir(caption = "Select output wav folder")
 
+
+#get CRS for a reprojection of the raster using the EPSG code. See on epsg.io for more informations
+# CH1903_lv03: 21781
+# CH1903_LV95: 2056
+# wgs84: 4326
+# Lambert 93: 2154
+
+epsg <- as.numeric(dlgInput("Enter an epsg number for reprojection:\n # CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res)
+
+#############################################################################
+########################## -- LET IT RUN - PART -- ##########################
+#############################################################################
+
+
 cat('you selected as working directories:\n', '\tin.dir:\t\t', in.dir, '\n ', '\tout.dir:\t', out.dir, '\n')
 
 setwd(in.dir)
@@ -89,18 +92,22 @@ setwd(in.dir)
 # list all .tif files in your orthoimage directory
 fns <- list.files(in.dir, patter='.tif$')#; print(fns)
 
+cat('found the following images in the in.dir directory:\n',fns,sep='\n')
+
 # Choose your orthoimage, this is the place to include a loop if several orthoimages have to be analysed:
-i <- 1
+i <- 3
 f <- fns[i]
+
 
 for(i in 1:length(fns)){
   f <- fns[i]
+  f.prj <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'ch.tif', sep='_')
   g <- paste(sub("(.+)[.][^.]+$", "\\1", f), 'VegIndex.tif', sep='_')
-  cat('Working on:\n', '\tinput file:\t', f, '\n ', '\toutput File:\t', g, '\n')
+  cat('Working on:\n', '\tinput file:\t\t', f, '\n ', '\toutput File:\t\t', g, '\n','\treprojected file:\t',f95)
   
   # file path to the raster
   fnr <- file.path(in.dir, f)
-
+  
   cat('open the ortho-image\n')
   r <- rast(fnr)
   
@@ -112,12 +119,16 @@ for(i in 1:length(fns)){
   # else replace on the raster stack:
   r[r==max(values(r))] <- NA
   
-  cat('re-project to the swiss coordinate system [lv95 -- epsg::2056]\n')
-  r <- project(r, lv95, method='bilinear', filename=file.path(in.dir,f95), overwrite=T)
+  if(exists('epsg')){
+    cat('re-project to the swiss coordinate system\t',proj,'\t')
+    proj <- paste0('+init=epsg:', epsg)
+    r <- project(r, proj, method='bilinear', filename=file.path(in.dir,f.prj), overwrite=T)
+  }
+
   
   # check image again, it should be a correct rgb image
   plotRGB(r, stretch="lin")
-  
+
   cat('Separate each layer:\n')
   # red layer
   rd <- r[[3]]
