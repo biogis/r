@@ -254,30 +254,30 @@ foreach(i=1:length(fns)) %dopar% {
   # plot(ndwi, col=elevRamp(255), legend=T)
 
   
-  # tt <- exp(nir/max(values(nir), na.rm=T))-log(bl/max(values(bl), na.rm=T))
-  tt <- exp(ndwi/max(values(ndwi), na.rm=T))/(log(gr/max(values(gr), na.rm=T))/log(bl/max(values(bl), na.rm=T)))
-  tt[tt==Inf | tt==-Inf] <- NA
-  plot(tt, col=elevRamp(255), legend=T)
-  names(tt) <- 'tt'
+  # Combine NDWI, green and blue layer to show water surface -> new Water Index -- WI
+  wi <- exp(ndwi/max(values(ndwi), na.rm=T))/(log(gr/max(values(gr), na.rm=T))/log(bl/max(values(bl), na.rm=T)))
+  wi[wi==Inf | wi==-Inf] <- NA
+  plot(wi, col=elevRamp(255), legend=T) # Check layer
+  names(wi) <- 'wi'
 
-  plotRGB(c(ndwi,tt,gndvi), stretch="lin")
+  plotRGB(c(ndwi,wi,gndvi), stretch="lin")
   
   
   ndwi.idx <- ndwi+abs(min(values(ndwi), na.rm=T)); ndwi.idx
-  tt.idx <- tt+abs(min(values(tt), na.rm=T)); tt.idx
+  wi.idx <- wi+abs(min(values(wi), na.rm=T)); wi.idx
   gndvi.idx <- gndvi+abs(min(values(gndvi), na.rm=T)); gndvi.idx
   
 
   ndwi.255 <- (ndwi.idx*255)/max(values(ndwi.idx), na.rm=T);ndwi.255
-  tt.255 <- (tt.idx*255)/max(values(tt.idx), na.rm=T);tt.255
+  wi.255 <- (wi.idx*255)/max(values(wi.idx), na.rm=T);wi.255
   gndvi.255 <- (gndvi.idx*255)/max(values(gndvi.idx), na.rm=T);gndvi.255
   
   # plotRGB(c(ndwi.255,tt.255,gndvi.255), stretch="lin")
   
   dt <- data.frame('ndwi'=as.data.frame(values(ndwi.255)),
-                   'tt'=as.data.frame(values(tt.255)),
+                   'tt'=as.data.frame(values(wi.255)),
                    'gndvi'=as.data.frame(values(gndvi.255)))
-  # names(dt) <- c('ndwi', 'tt', 'gndvi')
+  # names(dt) <- c('ndwi', 'wi', 'gndvi')
   summary(dt)
   head(dt); dim(dt)
   # plot(dt, cex=0.3, pch=16)
@@ -286,21 +286,22 @@ foreach(i=1:length(fns)) %dopar% {
   
   dt <- cbind(xy,dt); head(dt)
   
-  # system.time(write.csv(dt,file.path(out.dir,csvName), row.names=F))
+  system.time(write.csv(dt,file.path(out.dir,csvName), row.names=F))
+  
+  # remove data frame and other raster layers
+  rm(dt, xy, ndwi.255, wi.255, gndvi.255, ndwi.idx, wi.idx, gndvi.idx)
   
 
   # Stack all the layers, and give them a new name
-  s <- c(ndwi, tt, gndvi, msavi2, gemi, ndvi, allvi, rd, gr, bl, re, nir)
-  names(s) <- c('ndwi','tt','gndvi', 'msavi2','gemi','ndvi','allvi', 'rd','gr','bl','re','nir')
+  s <- c(ndwi, wi, gndvi, msavi2, gemi, ndvi, allvi, rd, gr, bl, re, nir)
+  names(s) <- c('ndwi','wi','gndvi', 'msavi2','gemi','ndvi','allvi', 'rd','gr','bl','re','nir')
   
   cat('Save a tif file with Vegetation index layers\n')
   rName <- file.path(out.dir, g)
   system.time(writeRaster(s, rName, overwrite=TRUE))
   
-  system.time(writeRaster(c(ndwi, tt, gndvi, msavi2, gemi, ndvi, allvi, rd, gr, bl, re, nir), rName, overwrite=TRUE))
-  
-  rm(s, dt)  
-  
+  # remove raster stack
+  rm(s)
 
   cat('Plot all\n')
   
@@ -312,10 +313,10 @@ foreach(i=1:length(fns)) %dopar% {
   plotRGB(c(gndvi, bl, gr), stretch="lin", main='gndvi, bl, gr')
   plot(ndvi, col=BrBG(255), legend=T, main='NDVI')
   plot(gndvi, col=BrBG(255), legend=T, main='GNDVI')
-  plotRGB(c(ndwi, tt, gndvi), stretch="lin", main='ndwi, tt, gndvi')
+  plotRGB(c(ndwi, wi, gndvi), stretch="lin", main='ndwi, tt, gndvi')
   plot(ndwi, col=elevRamp(255), legend=T, main='NDWI')
   plot(allvi, col=elevRamp(255), legend=T, main='[exp(NDWI)+exp(MSAVI2)+exp(GNDVI)]')
-  plot(tt, col=elevRamp(255), legend=T, main='test')
+  plot(wi, col=elevRamp(255), legend=T, main='test')
   dev.off()
   
   par(mfrow=c(1,1))
@@ -324,7 +325,10 @@ foreach(i=1:length(fns)) %dopar% {
   # bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
   bot$sendDocument(chat_id = 783925976, document = jpegName)
   
-  rm(rgb, rfc, gndvi, bl, gr, ndvi, ndwi, tt, allvi, ndre)
+  # remove raster layers
+  rm(rd, gr, bl, re, nir, rfc, rgb, ndvi, ndre, gndvi, ndwi, msavi2, eta, gemi, allvi, wi)
   
+  # remove file path and file names
+  rm(csvName, rName, f, f.prj, fnr, g)
   # Close your bracket if you made a loop through several orthoimages
 }
