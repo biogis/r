@@ -1,6 +1,6 @@
 #########################################################
 #########################################################
-# © eRey.ch | bioGIS; erey@biogis.ch
+# Â© eRey.ch | bioGIS; erey@biogis.ch
 # created on 2018.06.18
 # modified on 2021.11.16
 #source('./batFunc.r')
@@ -10,8 +10,8 @@
 
 ###########################################################
 ###########################################################
-
 # 
+# # 
 # start <- Sys.time();start
 # #choose working directory with all wav files
 # # in.dir <- choose.dir(caption = "Select input wav folder")
@@ -23,11 +23,11 @@
 # 
 # 
 # fn.f <- file.path(in.dir)
-# fns <- list.files(fn.f,pattern='.wav$',all.files=T,full.names=T,recursive=T,include.dirs=T) # store all wave files in the working directory
+# fns <- list.files(fn.f,pattern='.wav$',all.files=T,full.names=T,recursive=F,include.dirs=F) # store all wave files in the working directory
 # print(length(fns))
 # 
-# f <- fns[11]
-# 
+# f <- fns[7]
+# f <- '/home/erey/Documents/wav/NChenaux5_2577435_1183260_20220322.wav'
 # 
 # 
 # system.time(dt <- bat(f))
@@ -50,7 +50,7 @@
 # system.time(graph(f, dt, L, pp, out.dir))
 # end <- Sys.time();end
 # end-start
-# 
+# # 
 # #############################################33
 
 require(tuneR)
@@ -130,16 +130,16 @@ bat <- function(f, wl=1024, ovlp=50, wn='hamming', zp=64, fr=8000, to=150000){
 
 # dt <- bat(f)
 # str(dt)
-      
+
 
 cleanBat <- function(dt){
-      # Clean Signal, for each frequency band, substract the 50% quantile and select the values > than 10% above the mean, else set as NA
+  # Clean Signal, for each frequency band, substract the 50% quantile and select the values > than 10% above the mean, else set as NA
   row <- dt$freq # prepare new rownames with frequencies
   col <- dt$time # prepare new colnames with time
   rms.tot.unfilt <- -(sqrt(mean(dt$amp^2,na.rm=T)));rms.tot.unfilt
-      
+  
   # qtl <- 0.5 # Define quantile in %
-    
+  
   system.time(rowmea  <-  rowMeans(dt$amp, na.rm=T))
   system.time(rowmed  <-  apply(dt$amp, 1, median, na.rm = T))
   # system.time(rowQtl  <-  rowQuantiles(dt$amp, probs = qtl, na.rm = T))
@@ -171,6 +171,7 @@ cleanBat <- function(dt){
 
 
 # dt <- cleanBat(dt)
+# str(dt)
 
 
 statBat <- function(f, dt){
@@ -213,7 +214,7 @@ statBat <- function(f, dt){
       
       ProdVal <- mn*sdPer
       DivVal <- 100*(sdPer/mn)
-
+      
       dt.per <- data.frame('filename' = basename(f),
                            'q05Period' = q05,
                            'q25Period' = q25,
@@ -227,7 +228,7 @@ statBat <- function(f, dt){
     }
   }
   
-      
+  
   row <- dt$freq # prepare new rownames with frequencies
   col <- dt$time # prepare new colnames with time
   
@@ -306,12 +307,12 @@ statBat <- function(f, dt){
 }
 
 
-# L <- statBat(dt)
+# L <- statBat(f, dt)
 # str(L)
 # 
 # L$pks$snr_nse
 # 
-  
+
 #### ^.^ #### ^.^ #### ^.^ #### ^.^ ####
 # bat
 
@@ -319,23 +320,23 @@ batFinder <- function(f,L, output){
   if(any((L$pks$snr_nse) > 0.6 | (L$pks$snr_rms) > 0.6)){
     output <- paste(out.dir,basename(f),sep='/')
     file.copy(f,output)
-  # chiro.dtf <- data.frame('fileName' = output,
-  #                         'freq' = pks$freq,
-  #                         'Date' = asofdate,
-  #                         'FullName' = basename(f),
-  #                         'SNR SNE' = pks$snr_nse,
-  #                         'SNR RMS' = pks$snr_rms,
-  #                         'RMS' = rms.tot.filt,
-  #                         'Slope' = slp,
-  #                         'R2' = R2,
-  #                         'median' = median(dt$amp,na.rm=T)
-  # )
-  
-  # result <- rbind(result, chiro.dtf)
-  # result.all <- rbind(result.all, chiro.dtf)
-  
-  # print(paste(y,': chiro found at',pks$freq, 'in', basename(f), sep=' '))
-  print(paste('chiro found in', basename(f), sep=' '))
+    # chiro.dtf <- data.frame('fileName' = output,
+    #                         'freq' = pks$freq,
+    #                         'Date' = asofdate,
+    #                         'FullName' = basename(f),
+    #                         'SNR SNE' = pks$snr_nse,
+    #                         'SNR RMS' = pks$snr_rms,
+    #                         'RMS' = rms.tot.filt,
+    #                         'Slope' = slp,
+    #                         'R2' = R2,
+    #                         'median' = median(dt$amp,na.rm=T)
+    # )
+    
+    # result <- rbind(result, chiro.dtf)
+    # result.all <- rbind(result.all, chiro.dtf)
+    
+    # print(paste(y,': chiro found at',pks$freq, 'in', basename(f), sep=' '))
+    print(paste('chiro found in', basename(f), sep=' '))
   }
 }
 
@@ -363,63 +364,63 @@ batlab <- function(f){
 
 # tk <- batlab(f)
 
-      
+
 
 # plot control graph
 ################################
 
 control <- function(f, dt, L, pathName){
-    freqPeak <- c()
-    for(j in 1:dim(dt$amp)[2]){
-      mxm <- max(dt$amp[,j],na.rm=T)
-      idx <- which(dt$amp[,j]==mxm)
-      fpk <- ifelse(is.infinite(mxm)==T,NA,rownames(dt$amp)[idx])
-      freqPeak <- c(freqPeak,as.numeric(fpk))
-      }
-    pathName <- file.path(getwd())
-    pdfname <- paste(pathName,paste(paste(sub("(.+)[.][^.]+$", "\\1", basename(f)),sep='_'),'pdf',sep='.'),sep='/')
-            
-    pdf(pdfname,paper='a4r',width=11,height=8.5)
-    
-    par(mfrow=c(1,1),mar=c(6,5,4,5))
-    
-
-    lab10 <- batlab(f)
-
-    pp <- ggplot(L$dtf.freq, aes(x = specSum, y = peakBin))+
-            geom_point(aes(color = freqPeak),
-                       alpha = 0.7,
-                       size = 1.5,
-                       na.rm=T) +
-            scale_color_gradient2(name="freqPeak",
-                                  breaks = c(0, 50, 100),
-                                  labels = c("0 kHz", "50 kHz", "100 kHz"),
-                                  low = "tomato",
-                                  high = "steelblue",
-                                  mid = "gray60",
-                                  midpoint = 50)+
-            theme_bw(base_size = 10)+
-            theme(axis.line = element_line(colour = 'grey80'),
-                  panel.border = element_blank(),
-                  panel.background = element_blank(),
-                  axis.title.x=element_text(colour='grey50'),
-                  axis.title.y=element_text(colour='grey50')
-            )+
-            geom_smooth(mapping = aes(linetype = "r2"),method = "lm",formula = y ~ x,se = T,na.rm=T,color='tomato')+
-            scale_linetype(name = "",
-                           breaks = "r2",
-                           labels = list(bquote(slope==.(L$slp))),
-                           guide = guide_legend(override.aes = list(linetype = 1, size = 2, color = "red")))
-          #
-          print(pp)
-          
-          dev.off()
-          return(pp)
-          # #
+  freqPeak <- c()
+  for(j in 1:dim(dt$amp)[2]){
+    mxm <- max(dt$amp[,j],na.rm=T)
+    idx <- which(dt$amp[,j]==mxm)
+    fpk <- ifelse(is.infinite(mxm)==T,NA,rownames(dt$amp)[idx])
+    freqPeak <- c(freqPeak,as.numeric(fpk))
+  }
+  pathName <- file.path(getwd())
+  pdfname <- paste(pathName,paste(paste(sub("(.+)[.][^.]+$", "\\1", basename(f)),sep='_'),'pdf',sep='.'),sep='/')
+  
+  pdf(pdfname,paper='a4r',width=11,height=8.5)
+  
+  par(mfrow=c(1,1),mar=c(6,5,4,5))
+  
+  
+  lab10 <- batlab(f)
+  
+  pp <- ggplot(L$dtf.freq, aes(x = specSum, y = peakBin))+
+    geom_point(aes(color = freqPeak),
+               alpha = 0.7,
+               size = 1.5,
+               na.rm=T) +
+    scale_color_gradient2(name="freqPeak",
+                          breaks = c(0, 50, 100),
+                          labels = c("0 kHz", "50 kHz", "100 kHz"),
+                          low = "tomato",
+                          high = "steelblue",
+                          mid = "gray60",
+                          midpoint = 50)+
+    theme_bw(base_size = 10)+
+    theme(axis.line = element_line(colour = 'grey80'),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x=element_text(colour='grey50'),
+          axis.title.y=element_text(colour='grey50')
+    )+
+    geom_smooth(mapping = aes(linetype = "r2"),method = "lm",formula = y ~ x,se = T,na.rm=T,color='tomato')+
+    scale_linetype(name = "",
+                   breaks = "r2",
+                   labels = list(bquote(slope==.(L$slp))),
+                   guide = guide_legend(override.aes = list(linetype = 1, size = 2, color = "red")))
+  #
+  print(pp)
+  
+  dev.off()
+  return(pp)
+  # #
 }
 
 # pp <- control(f, dt, L)
-        
+
 
 # # # PLOT Spectrogram
 # # ######################
@@ -446,65 +447,65 @@ graph <- function(f, dt, L, pp, pathName){
   
   
   sp <- ggplot(df) +
-        geom_raster(aes(x, -y, fill=layer)) +
-        scale_fill_gradientn(name="[dB]",colours=jet.colors(length(brks)),na.value='white')+
-        theme_bw(base_size = 10)+
-        scale_x_continuous(breaks=arg.tps$at, labels = arg.tps$labels,sec.axis = dup_axis(name=waiver()))+
-        xlab('Temps [s]')+
-        scale_y_continuous(breaks= arg.freq$at,labels=arg.freq$labels,minor_breaks = arg.freq$minor,sec.axis = dup_axis(name=waiver())) +
-        ylab('FrÃ©quence [kHz]')+
-        theme(legend.position="none")+
-        theme(axis.text.x=element_text(colour='grey50',angle=0,hjust=1,vjust=1),
-              axis.title.x=element_text(colour='grey50'))+
-        theme(axis.text.y=element_text(colour='grey50'),
-              axis.title.y=element_text(colour='grey50'))+
-        theme(axis.line = element_line(colour = 'grey80'),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.border = element_blank(),
-              axis.ticks = element_line(colour='grey80'),
-              panel.background = element_blank())
+    geom_raster(aes(x, -y, fill=layer)) +
+    scale_fill_gradientn(name="[dB]",colours=jet.colors(length(brks)),na.value='white')+
+    theme_bw(base_size = 10)+
+    scale_x_continuous(breaks=arg.tps$at, labels = arg.tps$labels,sec.axis = dup_axis(name=waiver()))+
+    xlab('Temps [s]')+
+    scale_y_continuous(breaks= arg.freq$at,labels=arg.freq$labels,minor_breaks = arg.freq$minor,sec.axis = dup_axis(name=waiver())) +
+    ylab('FrÃÂ©quence [kHz]')+
+    theme(legend.position="none")+
+    theme(axis.text.x=element_text(colour='grey50',angle=0,hjust=1,vjust=1),
+          axis.title.x=element_text(colour='grey50'))+
+    theme(axis.text.y=element_text(colour='grey50'),
+          axis.title.y=element_text(colour='grey50'))+
+    theme(axis.line = element_line(colour = 'grey80'),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          axis.ticks = element_line(colour='grey80'),
+          panel.background = element_blank())
   
   
   xplot <- ggplot(df, aes(x=x, y=layer.med))+
-              geom_bar(stat="identity",colour='grey20')+
-              geom_bar(data = df,aes(y=-layer.med), stat="identity",colour='grey20')+
-              theme_bw(base_size = 8)+
-              xlab('Temps [s]')+
-              ylab('Ampl [dB]')+
-              theme(axis.line = element_line(colour = 'grey80'),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.border = element_blank(),
-                    panel.background = element_blank(),
-                    axis.title.x=element_text(colour='grey50'),
-                    axis.text.x=element_blank(),
-                    axis.ticks.x=element_blank(),
-                    axis.title.y=element_text(colour='grey50'),
-                    axis.text.y=element_blank(),
-                    axis.ticks.y=element_blank())+
-              ggtitle(basename(f))
-
+    geom_bar(stat="identity",colour='grey20')+
+    geom_bar(data = df,aes(y=-layer.med), stat="identity",colour='grey20')+
+    theme_bw(base_size = 8)+
+    xlab('Temps [s]')+
+    ylab('Ampl [dB]')+
+    theme(axis.line = element_line(colour = 'grey80'),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x=element_text(colour='grey50'),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_text(colour='grey50'),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())+
+    ggtitle(basename(f))
+  
   
   yplot <- ggplot(L$pwr, aes(x=L$pwr$freq, y=L$pwr$amp))+
-              geom_line()+
-              geom_point(data=L$pks,aes(x=L$pks$freq,y=L$pks$amp),colour='tomato')+
-              #  geom_text(data=pks,aes(label=freq),hjust=0.2, vjust=-0.5,colour='tomato')+
-              theme_bw(base_size = 10)+
-              xlab('Frequence [kHz]')+
-              ylab('Ampl [dB]')+
-              theme(axis.line = element_line(colour = 'grey80'),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.border = element_blank(),
-                    panel.background = element_blank(),
-                    axis.title.x=element_text(colour='grey50'),
-                    axis.text.x=element_blank(),
-                    axis.ticks.x=element_blank(),
-                    axis.title.y=element_text(colour='grey50'),
-                    axis.text.y=element_blank(),
-                    axis.ticks.y=element_blank())+
-                ggpubr::rotate()
+    geom_line()+
+    geom_point(data=L$pks,aes(x=L$pks$freq,y=L$pks$amp),colour='tomato')+
+    #  geom_text(data=pks,aes(label=freq),hjust=0.2, vjust=-0.5,colour='tomato')+
+    theme_bw(base_size = 10)+
+    xlab('Frequence [kHz]')+
+    ylab('Ampl [dB]')+
+    theme(axis.line = element_line(colour = 'grey80'),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x=element_text(colour='grey50'),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_text(colour='grey50'),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())+
+    ggpubr::rotate()
   
   
   p <- ggarrange(xplot, pp, sp, yplot,
@@ -515,9 +516,9 @@ graph <- function(f, dt, L, pp, pathName){
   
   jpegName <- paste(pathName,paste(sub("(.+)[.][^.]+$", "\\1", basename(f)),'jpg',sep='.'),sep='/')
   jpeg(jpegName,bg='transparent',width=10500,height=3500,units='px',res=300)
-    
+  
   print(p)
-        
+  
   dev.off()
   return(p)
 }
