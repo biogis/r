@@ -76,18 +76,13 @@ registerDoParallel(cl)
 
 # Initiate the bot session using the token from the enviroment variable.
 # bot <- Bot(token = 'YOUR.TOKEN.FROM.TELEGRAM.BOT.FATHER')
-bot <- Bot(token = '716214310:AAFIVH9QOmYOWb6FvDQYjTHGuP4GnYCtDg8')
 
 
 # choose working directory with all orthoimages
-# in.dir <- choose_dir(caption = "Select input tif folder")
-in.dir <- '/home/erey/Documents/infoFauna/pyData/Drone_Process/raw/transfer_43935_files_fb7c6ebb'
-in.dir <- 'C:/tmp/Drone_Process/VegIndex/raw'
+in.dir <- choose_dir(caption = "Select input tif folder")
 
 # choose output directory
-# out.dir <- choose_dir(caption = "Select output tif folder")
-out.dir <- '/home/erey/Documents/infoFauna/pyData/Drone_Process/VegIndex/'
-out.dir <- 'C:/tmp/Drone_Process/VegIndex/result'
+out.dir <- choose_dir(caption = "Select output tif folder")
 
 
 
@@ -428,9 +423,7 @@ for(i in 1:length(fns)){
   par(mfrow=c(1,1))
 
 
-  # bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
-  bot$sendDocument(chat_id = 783925976, document = jpegName)
-  # bot$sendDocument(chat_id = 783925976, document = histName)
+  bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
 
   # remove raster layers
   rm(rd, gr, bl, re, nir, rfc, rgb, ndvi, ndre, gndvi, ndwi, msavi2, eta, gemi, allvi, wi)
