@@ -1,8 +1,8 @@
 #########################################################
 #########################################################
 # Â© eRey.ch | bioGIS; erey@biogis.ch
-# created on 2022.02.17
-# modified on 2022.04.22
+# created on 2022.01.31
+# modified on 2022.02.17
 # https://github.com/biogis/r/blob/master/vegIndex.r
 # url <- 'https://raw.githubusercontent.com/biogis/r/master/VegIndex.r'
 # source('./vegIndex.r')
@@ -19,7 +19,7 @@ rm(list=ls())
 
 packages <- c(
   #Spatial libraries
-  'sf','terra','spatial','leaflet','raster',
+  'sf','terra','spatial','leaflet','raster','mlr',
 
   #graphics libraries
   'RColorBrewer','jpeg','png',
@@ -97,7 +97,7 @@ out.dir <- choose_dir(caption = "Select output tif folder")
 
 # epsg <- dlgInput("Enter an epsg number for reprojection\nor NA if no reprojection is required:\n# CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res
 epsg <- 2056
-epsg <- NA
+# epsg <- NA
 
 #############################################################################
 ########################## -- LET IT RUN - PART -- ##########################
@@ -114,7 +114,7 @@ fns <- list.files(in.dir, patter='.tif$')#; print(fns)
 cat('found the following images in the in.dir directory:\n',fns,sep='\n')
 
 # Choose your orthoimage, this is the place to include a loop if several orthoimages have to be analysed:
-i <- 2
+i <- 21
 f <- fns[i]
 
 #
@@ -142,11 +142,11 @@ for(i in 1:length(fns)){
   NAValues <- max(values(r), na.rm=T)
   r[r==max(values(r))] <- NA
 
-  # if(!is.na(epsg)){
-  #   p <- paste0('+init=epsg:', epsg)
-  #   cat('re-project to the swiss coordinate system\t',p,'\n')
-  #   r <- project(r, p, method='bilinear', filename=file.path(out.dir,f.prj), overwrite=T)
-  # }
+  if(!is.na(epsg)){
+    p <- paste0('+init=epsg:', epsg)
+    cat('re-project to the swiss coordinate system\t',p,'\n')
+    r <- project(r, p, method='bilinear', filename=file.path(out.dir,f.prj), overwrite=T)
+  }
 
   # check image again, it should be a correct rgb image
   plotRGB(r, stretch="lin")
@@ -276,11 +276,11 @@ for(i in 1:length(fns)){
   # Combine NDWI, green and blue layer to show water surface -> new Water Index -- WI
   wi <- exp(ndwi/max(values(ndwi), na.rm=T))/(log(gr/max(values(gr), na.rm=T))/log(bl/max(values(bl), na.rm=T)))
   wi[wi==Inf | wi==-Inf] <- NA
-  plot(wi, col=elevRamp(255), legend=T) # Check layer
   names(wi) <- 'wi'
   wi <- wi/sd(values(wi), na.rm=T)
   wi[wi==max(values(wi), na.rm=T)] <- NA
-
+  plot(wi, col=elevRamp(255), legend=T) # Check layer
+  
 
   nr <- ndwi^log(wi)
   nr[nr==Inf | nr==-Inf] <- NA
@@ -332,7 +332,9 @@ for(i in 1:length(fns)){
   dt[y,] <- NA
   y <- which(!is.na(dt$ndwi)); length(y)
   dt[y,'hex'] <- rgb(dt[y,1],dt[y,2],dt[y,3], max=255)
-
+  hex <- dt$hex
+  
+  dt$hexCde <- strtoi(str_sub(hex,2,7),base=16L)
 
   xy <- xyFromCell(ndwi.255, 1:ncell(ndwi.255))
 
@@ -340,7 +342,7 @@ for(i in 1:length(fns)){
 
   j <- which(!is.na(dt$ndwi)); length(j)
   dt <- data.table(dt[j,]); dt
-  
+
   system.time(fwrite(dt,file.path(out.dir,csvName), row.names=F))
   # system.time(write.csv(dt,file.path(out.dir,csvName), row.names=F))
   
@@ -375,18 +377,22 @@ for(i in 1:length(fns)){
 
 
 
-  # # It is important to set the seed generator because `kmeans` initiates the centers in random locations
-  # set.seed(99)
-  # # We want to create 10 clusters, allow 500 iterations, start with 5 random sets using "Lloyd" method
-  # kmncluster <- kmeans(na.omit(nr), centers=10,iter.max = 500, nstart = 5, algorithm="Lloyd")
-  # # kmeans returns an object of class "kmeans"
-  # str(kmncluster)
-  #
-  # knr <- ndwi
-  # values(knr) <- kmncluster$cluster
-  # knr
-  # plot(knr, col=elevRamp(10))
-  #
+  # It is important to set the seed generator because `kmeans` initiates the centers in random locations
+  set.seed(99)
+  # We want to create 10 clusters, allow 500 iterations, start with 5 random sets using "Lloyd" method
+  kmncluster <- kmeans(dt$hexCde, centers=10,iter.max = 500, nstart = 10, algorithm="Lloyd")
+  # kmeans returns an object of class "kmeans"
+  str(kmncluster)
+
+  knr <- ndwi
+  values(knr) <- kmncluster$cluster
+  knr
+  
+  jpegName <- file.path(out.dir, paste(sub("(.+)[.][^.]+$", "\\1", f), 'Cluster.jpg', sep='_'))
+  jpeg(jpegName,6000,6000,units = 'px',quality=100,pointsize=72)
+  plot(knr, col=elevRamp(10))
+  dev.off()
+  
 
   # remove data frame and other raster layers
   rm(dt, xy, ndwi.255, wi.255, gndvi.255, ndwi.idx, wi.idx, gndvi.idx)
@@ -413,8 +419,8 @@ for(i in 1:length(fns)){
   plotRGB(c(gndvi, bl, gr), stretch="lin", main='gndvi, bl, gr')
   # plot(ndvi, col=BrBG(255), legend=T, main='NDVI')
   plot(gndvi, col=BrBG(255), legend=F, main='GNDVI')
-  plotRGB(c(ndwi, wi, gndvi), stretch="lin", main='ndwi, tt, gndvi')
-  plotRGB(c(ndwi, nr, allvi), stretch="lin", main='ndwi, tt, gndvi')
+  plotRGB(c(ndwi, wi, gndvi), stretch="lin", main='ndwi, wi, gndvi')
+  plotRGB(c(ndwi, nr, allvi), stretch="lin", main='ndwi, nr, gndvi')
   plot(ndwi, col=elevRamp(255), legend=F, main='NDWI')
   plot(allvi, col=elevRamp(255), legend=F, main='[exp(NDVI)+exp(MSAVI2)+exp(GNDVI)]')
   plot(wi, col=elevRamp(255), legend=F, main='wi')
@@ -423,7 +429,7 @@ for(i in 1:length(fns)){
   par(mfrow=c(1,1))
 
 
-  bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
+  # bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
 
   # remove raster layers
   rm(rd, gr, bl, re, nir, rfc, rgb, ndvi, ndre, gndvi, ndwi, msavi2, eta, gemi, allvi, wi)
