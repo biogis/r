@@ -1,8 +1,8 @@
 #########################################################
 #########################################################
-# Â© eRey.ch | bioGIS; erey@biogis.ch
-# created on 2022.01.31
-# modified on 2022.02.17
+# © eRey.ch | bioGIS; erey@biogis.ch
+# created on 2022.02.17
+# modified on 2022.04.29
 # https://github.com/biogis/r/blob/master/vegIndex.r
 # url <- 'https://raw.githubusercontent.com/biogis/r/master/VegIndex.r'
 # source('./vegIndex.r')
@@ -19,7 +19,7 @@ rm(list=ls())
 
 packages <- c(
   #Spatial libraries
-  'sf','terra','spatial','leaflet','raster',
+  'sf','terra','spatial','leaflet','raster','caret',
 
   #graphics libraries
   'RColorBrewer','jpeg','png',
@@ -81,11 +81,15 @@ registerDoParallel(cl)
 # bot <- Bot(token = 'YOUR.TOKEN.FROM.TELEGRAM.BOT.FATHER')
 
 
-# choose working directory with all orthoimages
-# in.dir <- choose_dir(caption = "Select input tif folder")
+# choose working directory
+in.dir <- choose_dir(caption = "Select input tif folder")
+
+
+# Select directory with all orthoimages if different from in.dir
+d <- 'Marthalen'
 
 # choose output directory
-# out.dir <- choose_dir(caption = "Select output tif folder")
+out.dir <- choose_dir(caption = "Select output tif folder")
 
 
 
@@ -100,7 +104,6 @@ registerDoParallel(cl)
 
 # epsg <- dlgInput("Enter an epsg number for reprojection\nor NA if no reprojection is required:\n# CH1903_lv03:\t21781\n# CH1903_LV95:\t2056\n# wgs84:\t4326", 2056)$res
 epsg <- 2056
-# epsg <- NA
 
 #############################################################################
 ########################## -- LET IT RUN - PART -- ##########################
@@ -109,16 +112,16 @@ epsg <- 2056
 
 cat('you selected as working directories:\n', '\tin.dir:\t\t', in.dir, '\n ', '\tout.dir:\t', out.dir, '\n')
 
-setwd(in.dir)
+setwd(file.path(in.dir,d))
 
 # list all .tif files in your orthoimage directory
-fns <- list.files(in.dir, patter='.tif$')#; print(fns)
+fns <- list.files(file.path(in.dir,d), patter='.tif$')#; print(fns)
 
 cat('found the following images in the in.dir directory:\n',fns,sep='\n')
 
 # Choose your orthoimage, this is the place to include a loop if several orthoimages have to be analysed:
-i <- 2
-f <- fns[i]
+i <- 19
+f <- fns[i];f
 
 #
 # foreach(i=1:length(fns)) %dopar% {
@@ -136,7 +139,7 @@ for(i in 1:length(fns)){
 
   if(file.exists(file.path(out.dir,f.prj))){
     fnr <- file.path(out.dir,f.prj)} else {
-    fnr <- file.path(in.dir, f)}
+    fnr <- file.path(in.dir,d, f)}
     
     
   r <- rast(fnr)
@@ -151,7 +154,7 @@ for(i in 1:length(fns)){
   if(NAValues == 2^16-1){
     r[r==max(values(r))] <- NA}
   
-
+  # Project orthoimage to swiss coordinate system (or any other, check epsg <- XXXXX)
   if(!is.na(epsg) & !file.exists(file.path(out.dir,f.prj))){
     p <- paste0('+init=epsg:', epsg)
     cat('re-project to the swiss coordinate system\t',p,'\n')
@@ -165,22 +168,27 @@ for(i in 1:length(fns)){
   # red layer
   rd <- r[[3]]
   names(rd) <- 'rd'
-
+  rd <- rd/sd(values(rd), na.rm=T)
+  
   # green layer
   gr <- r[[2]]
   names(gr) <- 'gr'
-
+  gr <- gr/sd(values(gr), na.rm=T)
+  
   # blue layer
   bl <- r[[1]]
   names(bl) <- 'bl'
-
+  bl <- bl/sd(values(bl), na.rm=T)
+  
   # red edge layer
   re <- r[[4]]
   names(re) <- 're'
-
+  re <- re/sd(values(re), na.rm=T)
+  
   # near infra-red layer
   nir <- r[[5]]
   names(nir) <- 'nir'
+  nir <- nir/sd(values(nir), na.rm=T)
 
   # # If the orthoimage is to huge and your computer cannot handle the max value replacement, do it for each layer
   # NAValue <- max(values(nir))
@@ -210,18 +218,18 @@ for(i in 1:length(fns)){
 
   cat('Compute different vegettion index:\n')
 
-  # NDVI, with the NIR and red layers
-  cat('NDVI\n')
-  ndvi <- (nir-rd)/(nir+rd)
-  names(ndvi) <- 'ndvi'
-  ndvi <- ndvi/sd(values(ndvi), na.rm=T)
+  # # NDVI, with the NIR and red layers
+  # cat('NDVI\n')
+  # ndvi <- (nir-rd)/(nir+rd)
+  # names(ndvi) <- 'ndvi'
+  # ndvi <- ndvi/sd(values(ndvi), na.rm=T)
 
 
-  # NDRE, with the NIR and the red edge layer, better with a dense canopy, this index has a better penetration coefficient
-  cat('NDRE\n')
-  ndre <- (nir-re)/(nir+re)
-  names(ndre) <- 'ndre'
-  ndre <- ndre/sd(values(ndre), na.rm=T)
+  # # NDRE, with the NIR and the red edge layer, better with a dense canopy, this index has a better penetration coefficient
+  # cat('NDRE\n')
+  # ndre <- (nir-re)/(nir+re)
+  # names(ndre) <- 'ndre'
+  # ndre <- ndre/sd(values(ndre), na.rm=T)
 
 
   # GNDVI, with the NIR and green layer, better for late vegetation stage
@@ -240,26 +248,26 @@ for(i in 1:length(fns)){
   ndwi <- ndwi/sd(values(ndwi), na.rm=T)
   # ndwi[ndwi<0] <- NA
 
-  # Modified Soil Adjusted Vegetation Index (MSAVI2)
-  # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-rd)))
-  msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-gr)))
-  msavi2[msavi2==Inf | msavi2==-Inf] <- NA
-  msavi2 <- msavi2/sd(values(msavi2), na.rm=T)
-  # plot(msavi2, col=elevRamp(255))
-  names(msavi2) <- 'msavi2'
+  # # Modified Soil Adjusted Vegetation Index (MSAVI2)
+  # # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-rd)))
+  # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-gr)))
+  # msavi2[msavi2==Inf | msavi2==-Inf] <- NA
+  # msavi2 <- msavi2/sd(values(msavi2), na.rm=T)
+  # # plot(msavi2, col=elevRamp(255))
+  # names(msavi2) <- 'msavi2'
 
   # # Burn Area Index
   # bai <- 1/((0.1 - rd)^2 + (0.06 - nir)^2)
   # plot(bai, col=elevRamp(255))
 
-  # Global Environmental Monitoring Index (GEMI)
-  eta <- ((2 * (nir^2 - rd^2)) + (1.5 * nir) + (0.5 * rd))/(nir + rd + 0.5)
-  # gemi  <- eta * (1 - (0.25 * eta)) - ((rd - 0.125)/(1 - rd))
-  gemi  <- eta * (1 - (0.25 * eta)) - ((gr - 0.125)/(1 - gr))
-  gemi[gemi==Inf | gemi==-Inf] <- NA
-  gemi <- gemi/sd(values(gemi), na.rm=T)
-  # plot(gemi, col=BrBG(255))
-  names(gemi) <- 'gemi'
+  # # Global Environmental Monitoring Index (GEMI)
+  # eta <- ((2 * (nir^2 - rd^2)) + (1.5 * nir) + (0.5 * rd))/(nir + rd + 0.5)
+  # # gemi  <- eta * (1 - (0.25 * eta)) - ((rd - 0.125)/(1 - rd))
+  # gemi  <- eta * (1 - (0.25 * eta)) - ((gr - 0.125)/(1 - gr))
+  # gemi[gemi==Inf | gemi==-Inf] <- NA
+  # gemi <- gemi/sd(values(gemi), na.rm=T)
+  # # plot(gemi, col=BrBG(255))
+  # names(gemi) <- 'gemi'
 
 
   # # Visible Atmospherically Resistant Index (VARI)
@@ -272,11 +280,11 @@ for(i in 1:length(fns)){
   # srre[srre==Inf | srre==-Inf] <- NA
   # plot(srre, col=elevRamp(255))
 
-  # combine all layers to expend the -1 -> 0 values to -3 -> 0 value. It allow to refine the scale and facilitate the detection of ponds
-  cat('Combination of all VI\n')
-  allvi <- -(exp(ndvi)+exp(msavi2)+exp(gndvi))
-  names(allvi) <- 'allvi'
-  allvi <- allvi/sd(values(allvi), na.rm=T)
+  # # combine all layers to expend the -1 -> 0 values to -3 -> 0 value. It allow to refine the scale and facilitate the detection of ponds
+  # cat('Combination of all VI\n')
+  # allvi <- -(exp(ndvi)+exp(msavi2)+exp(gndvi))
+  # names(allvi) <- 'allvi'
+  # allvi <- allvi/sd(values(allvi), na.rm=T)
 
   # nbg <- c(ndwi, msavi2, gndvi)
   # plotRGB(nbg, stretch="lin")
@@ -312,63 +320,57 @@ for(i in 1:length(fns)){
   wi.idx <- wi+abs(min(values(wi), na.rm=T)); wi.idx
   nr.idx <- nr+abs(min(values(nr), na.rm=T)); nr.idx
   bl.idx <- bl+abs(min(values(bl), na.rm=T)); bl.idx
+  nir.idx <- nir+abs(min(values(nir), na.rm=T)); nir.idx
 
 
   ndwi.255 <- (ndwi.idx*255)/max(values(ndwi.idx), na.rm=T);ndwi.255
   wi.255 <- (wi.idx*255)/max(values(wi.idx), na.rm=T);wi.255
   nr.255 <- (nr.idx*255)/max(values(nr.idx), na.rm=T);nr.255
   bl.255 <- (bl.idx*255)/max(values(bl.idx), na.rm=T);bl.255
-
-  # rcl <- data.frame(from=seq(5,245,by=10),
-  #                   to=seq(15,255,by=10),
-  #                   becomes=seq(10,250,by=10))
-  # rcl <- rbind(data.frame(from=0, to=5, becomes=0), rcl)
-  # ndwi.255 <- classify(ndwi.255,as.matrix(rcl))
-  # wi.255 <- classify(wi.255,as.matrix(rcl))
-  # gndvi.255 <- classify(gndvi.255,as.matrix(rcl))
-
-  plotRGB(c(ndwi.255,wi.255,nr.255), stretch="lin")
-
-
-
-  # plotRGB(c(ndwi.255,tt.255,gndvi.255), stretch="lin")
+  nir.255 <- (nir.idx*255)/max(values(nir.idx), na.rm=T);nir.255
 
   dt <- data.frame('ndwi.255'=as.data.frame(values(ndwi.255)),
                    'wi.255'=as.data.frame(values(wi.255)),
                    'nr.255'=as.data.frame(values(nr.255)),
-                   'bl.255'=as.data.frame(values(bl.255)))
-  names(dt) <- c('ndwi', 'wi', 'nr', 'bl')
+                   'bl.255'=as.data.frame(values(bl.255)),
+                   'nir.255'=as.data.frame(values(nir.255)))
+  names(dt) <- c('ndwi', 'wi', 'nr', 'bl', 'nir')
   summary(dt)
   head(dt); dim(dt)
   # plot(dt, cex=0.3, pch=16)
-
+  
   y <- which(!is.na(dt$ndwi) & is.na(dt$nr)); length(y)
   dt[y,] <- NA
   y <- which(!is.na(dt$ndwi)); length(y)
-  dt[y,'hex'] <- rgb(dt[y,1],dt[y,2],dt[y,3], max=255)
-
-  dt$hexCde <- strtoi(str_sub(dt$hex,2,7),base=16L)
-
+  dt[y,'hex_wtr'] <- rgb(dt[y,'ndwi'],dt[y,'wi'],dt[y,'nr'], max=255)
+  dt[y,'hex_bl'] <- rgb(dt[y,'ndwi'],dt[y,'nr'],dt[y,'bl'], max=255)
+  
+  
   xy <- xyFromCell(ndwi.255, 1:ncell(ndwi.255))
-
+  
   dt <- cbind(xy,dt); head(dt)
-
-  j <- which(!is.na(dt$ndwi)); length(j)
-  dt <- data.table(dt[j,]); dt
-
+  
+  j <- which(is.na(dt$hex)); length(j)
+  dt[j,'hex_wtr'] <- rgb(0,0,0, max=255)
+  dt[j,'hex_bl'] <- rgb(0,0,0, max=255)
+  dt$hexCde_wtr <- strtoi(str_sub(dt$hex_wtr,2,7),base=16L)
+  dt$hexCde_bl <- strtoi(str_sub(dt$hex_bl,2,7),base=16L)
+  dt <- data.table(dt); dt
+  
+  water_nir <- nr; names(water_nir) <- 'water_NIR'
+  water_bl <- nr; names(water_bl) <- 'water_BLUE'
+  values(water_nir) <- dt$hexCde_wtr
+  values(water_bl) <- dt$hexCde_bl
+  plot(water_nir, col=elevRamp(255))
+  plot(water_bl, col=elevRamp(255))
+  
   system.time(fwrite(dt,file.path(out.dir,csvName), row.names=F))
-  # system.time(write.csv(dt,file.path(out.dir,csvName), row.names=F))
-
-  # plot(dt$x,dt$y, col=dt$hex, cex=0.1)
-  #
-  #
-  # lNum <- list('ndwi'=na.omit(values(ndwi)),
-  #              'msavi2'=na.omit(values(msavi2)),
-  #              'allvi'=na.omit(values(allvi)),
-  #              'gndvi' = na.omit(values(gndvi)),
-  #              'wi' = na.omit(values(wi)),
-  #              # 'gemi' = na.omit(values(gemi)),
-  #              'nr' = na.omit(values(nr)))
+  
+  # lNum <- list('ndwi'=na.omit(values(ndwi.255)),
+  #              'wi' = na.omit(values(wi.255)),
+  #              'nr' = na.omit(values(nr.255)),
+  #              'bl' = na.omit(values(bl.255)),
+  #              'nir' = na.omit(values(nir.255)))
   #
   #
   # histName <- file.path(out.dir, paste(sub("(.+)[.][^.]+$", "\\1", f), 'histo.jpg', sep='_'))
@@ -378,45 +380,17 @@ for(i in 1:length(fns)){
   # dev.off()
 
 
-  # plotRGB(c(ndwi,wi,allvi), stretch="lin")
-  # plotRGB(c(ndwi,nr,allvi), stretch="lin")
-  #
-  # par(mfrow=c(2,2))
-  #
-  # plotRGB(c(ndwi,msavi2,gndvi), stretch="lin")
-  # plotRGB(c(ndwi,wi,gemi), stretch="lin")
-  # plotRGB(c(ndwi,wi,gndvi), stretch="lin")
-  # plotRGB(c(ndwi,nr, gndvi), stretch="lin")
-
-
-  k <- ceiling(sqrt(5)/res(ndwi)[1]);k
-
-
-  # It is important to set the seed generator because `kmeans` initiates the centers in random locations
-  set.seed(99)
-  # We want to create 10 clusters, allow 500 iterations, start with 5 random sets using "Lloyd" method
-  kmncluster <- kmeans(dt$hexCde, centers=k,iter.max = 500, nstart = 10, algorithm="Lloyd")
-  # kmeans returns an object of class "kmeans"
-  str(kmncluster)
-
-  knr <- ndwi
-  values(knr) <- kmncluster$cluster
-  knr
-  plot(knr, col=elevRamp(10))
-  
-  jpegName <- file.path(out.dir, paste(sub("(.+)[.][^.]+$", "\\1", f), 'Cluster.jpg', sep='_'))
-  jpeg(jpegName,6000,6000,units = 'px',quality=100,pointsize=72)
-  plot(knr, col=elevRamp(10))
-  dev.off()
-
-
   # remove data frame and other raster layers
   rm(dt, xy, ndwi.255, wi.255, gndvi.255, ndwi.idx, wi.idx, gndvi.idx)
 
 
   # Stack all the layers, and give them a new name
-  s <- c(ndwi, wi, nr, gndvi, msavi2, gemi, ndvi, allvi, rd, gr, bl, re, nir)
-  names(s) <- c('ndwi','wi','nr','gndvi','msavi2','gemi','ndvi','allvi','rd','gr','bl','re','nir')
+  # s <- c(ndwi, wi, nr, gndvi, msavi2, gemi, ndvi, allvi, rd, gr, bl, re, nir)
+  # names(s) <- c('ndwi','wi','nr','gndvi','msavi2','gemi','ndvi','allvi','rd','gr','bl','re','nir')
+  
+  s <- c(ndwi, wi, nr, bl, nir, gndvi, water_nir, water_bl)
+  names(s) <- c('ndwi','wi','nr','bl','nir','gndvi','water_nir','water_bl')
+  
 
   cat('Save a tif file with Vegetation index layers\n')
   rName <- file.path(out.dir, g)
@@ -427,32 +401,33 @@ for(i in 1:length(fns)){
 
   cat('Plot all\n')
 
-  jpegName <- file.path(out.dir, paste(sub("(.+)[.][^.]+$", "\\1", f), 'VegIndex.jpg', sep='_'))
-  jpeg(jpegName,6000,6000,units = 'px',quality=100,pointsize=72)
-  par(mfrow=c(3,3))
-  plotRGB(c(rd, gr, bl), stretch="lin")
-  plotRGB(c(nir, rd, gr), stretch="lin")
-  plotRGB(c(gndvi, bl, gr), stretch="lin", main='gndvi, bl, gr')
-  # plot(ndvi, col=BrBG(255), legend=T, main='NDVI')
-  plot(gndvi, col=BrBG(255), legend=F, main='GNDVI')
-  plotRGB(c(ndwi, wi, gndvi), stretch="lin", main='ndwi, wi, gndvi')
-  plotRGB(c(ndwi, nr, allvi), stretch="lin", main='ndwi, nr, allvi')
-  plot(ndwi, col=elevRamp(255), legend=F, main='NDWI')
-  plot(allvi, col=elevRamp(255), legend=F, main='[exp(NDVI)+exp(MSAVI2)+exp(GNDVI)]')
-  plot(wi, col=elevRamp(255), legend=F, main='wi')
-  dev.off()
+  # jpegName <- file.path(out.dir, paste(sub("(.+)[.][^.]+$", "\\1", f), 'VegIndex.jpg', sep='_'))
+  # jpeg(jpegName,6000,6000,units = 'px',quality=100,pointsize=72)
+  # par(mfrow=c(3,3))
+  # plotRGB(c(rd, gr, bl), stretch="lin")
+  # plotRGB(c(nir, rd, gr), stretch="lin")
+  # plotRGB(c(gndvi, bl, gr), stretch="lin", main='gndvi, bl, gr')
+  # # plot(ndvi, col=BrBG(255), legend=T, main='NDVI')
+  # plot(gndvi, col=BrBG(255), legend=F, main='GNDVI')
+  # plotRGB(c(ndwi, wi, bl), stretch="lin", main='ndwi, wi, gndvi')
+  # plotRGB(c(ndwi, nr, bl), stretch="lin", main='ndwi, nr, allvi')
+  # plot(ndwi, col=elevRamp(255), legend=F, main='NDWI')
+  # plot(wi, col=elevRamp(255), legend=F, main='[exp(NDVI)*(log(bl)/log(gr))')
+  # plotRGB(c(ndwi, wi, nr), stretch="lin", main='ndwi, nr, allvi')
+  # dev.off()
 
-  par(mfrow=c(1,1))
+  par(mfrow=c(2,1))
 
   jpegName <- file.path(out.dir, 'VegIndex.jpg')
   jpeg(jpegName,6000,6000,units = 'px',quality=100,pointsize=72)
-  plotRGB(c(ndwi,wi,nr), stretch="lin")
+  plot(water_nir, col=elevRamp(255))
+  plot(water_bl, col=elevRamp(255))
   dev.off()
 
-  bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
+  # bot$sendDocument(chat_id = 'YOUR_CHAT_ID_FROM_TELEGRAM', document = jpegName)
 
   # remove raster layers
-  rm(rd, gr, bl, re, nir, rfc, rgb, ndvi, ndre, gndvi, ndwi, msavi2, eta, gemi, allvi, wi)
+  rm(rd, gr, bl, re, nir, rfc, rgb, ndvi, ndre, gndvi, ndwi, msavi2, eta, gemi, allvi, wi, nr, water_bl, water_nir)
 
   # remove file path and file names
   rm(csvName, rName, f, f.prj, fnr, g)
