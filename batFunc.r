@@ -53,14 +53,29 @@
 # # 
 # #############################################33
 
-require(tuneR)
-require(seewave)
-require(data.table)
-require(matrixStats)
-require(ggplot2)
-require(ggpubr)
-require(raster)
+packages <- c(
+  #Acoustic libraries
+  'tuneR','seewave',
+  
+  #Data library
+  'data.table','matrixStats',
 
+    #graphics libraries
+  'ggplot2','ggpubr','raster','patchwork')
+
+
+
+
+for(pkg in packages){print(pkg)
+  libTest <- try(library(pkg,character.only=T),silent=T)
+  if(class(libTest)=='try-error'){
+    updteTest <- try(install.packages(pkg))    
+    if(class(updteTest)=='try-error'){update.packages(pkg)}
+    else{install.packages(pkg)}
+    print(pkg)
+    library(pkg,character.only=T)
+  }
+}
 
 jet.colors <- colorRampPalette(c('#371450','#00007F','#0000ff','#007FFF','#00ffff','#7FFF7F','#ffff00','#FF7F00','#ff0000','#7F0000'))
 BrBG <- colorRampPalette(c('#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#f5f5f5','#c7eae5','#80cdc1','#35978f','#01665e','#003c30'))
@@ -518,6 +533,8 @@ graph <- function(f, dt, L, pp, pathName){
   p <- ggarrange(sp, yplot,  align = "h",
                  widths = c(6, 1),
                  common.legend = F)
+  
+  p <- xplot + pp / sp + yplot
   
   
   jpegName <- paste(pathName,paste(sub("(.+)[.][^.]+$", "\\1", basename(f)),'jpg',sep='.'),sep='/')
