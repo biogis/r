@@ -1,6 +1,6 @@
 #########################################################
 #########################################################
-# Â© eRey.ch | bioGIS; erey@biogis.ch
+# © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2018.06.18
 # modified on 2021.11.16
 #source('./batFunc.r')
@@ -13,40 +13,40 @@
 # 
 # # 
 # start <- Sys.time();start
-# #choose working directory with all wav files
-# # in.dir <- choose.dir(caption = "Select input wav folder")
-# 
-# #choose copying directory
-# # out.dir <- choose.dir(caption = "Select output wav folder")
-# 
+# # ## choose working directory with all wav files
+# in.dir <- choose.dir(caption = "Select input wav folder")
+# # 
+# # ## choose copying directory
+# out.dir <- choose.dir(caption = "Select output wav folder")
+# # 
 # setwd(in.dir)
-# 
-# 
+# # 
+# # 
 # fn.f <- file.path(in.dir)
 # fns <- list.files(fn.f,pattern='.wav$',all.files=T,full.names=T,recursive=F,include.dirs=F) # store all wave files in the working directory
 # print(length(fns))
-# 
-# f <- fns[7]
-# f <- '/home/erey/Documents/wav/NChenaux5_2577435_1183260_20220322.wav'
-# 
-# 
+# # 
+# f <- fns[3]
+# # f <- '/home/erey/Documents/wav/NChenaux5_2577435_1183260_20220322.wav'
+# # 
+# # 
 # system.time(dt <- bat(f))
-# 
+# # 
 # system.time(dt <- cleanBat(dt))
-# 
-# 
-# system.time(L <- statBat(dt))
-# 
-# 
-# system.time(batFinder(f, L, '~/Documents/wav/wavTest'))
-# 
-# 
+# # 
+# # 
+# system.time(L <- statBat(f, dt))
+# # 
+# # 
+# system.time(batFinder(f, L, out.dir))
+# # 
+# # 
 # system.time(tk <- batlab(f))
-# 
-# 
+# # 
+# # 
 # system.time(pp <- control(f, dt, L, out.dir))
-# 
-# 
+# # 
+# # 
 # system.time(graph(f, dt, L, pp, out.dir))
 # end <- Sys.time();end
 # end-start
@@ -303,6 +303,8 @@ statBat <- function(f, dt){
                      'slp' = slp,
                      'R2' = R2,
                      'dt.wav' = dt.per)
+  
+  L <- resultList
   return(resultList)
 }
 
@@ -453,7 +455,7 @@ graph <- function(f, dt, L, pp, pathName){
     scale_x_continuous(breaks=arg.tps$at, labels = arg.tps$labels,sec.axis = dup_axis(name=waiver()))+
     xlab('Temps [s]')+
     scale_y_continuous(breaks= arg.freq$at,labels=arg.freq$labels,minor_breaks = arg.freq$minor,sec.axis = dup_axis(name=waiver())) +
-    ylab('FrÃÂ©quence [kHz]')+
+    ylab('Frequence [kHz]')+
     theme(legend.position="none")+
     theme(axis.text.x=element_text(colour='grey50',angle=0,hjust=1,vjust=1),
           axis.title.x=element_text(colour='grey50'))+
@@ -508,9 +510,13 @@ graph <- function(f, dt, L, pp, pathName){
     ggpubr::rotate()
   
   
-  p <- ggarrange(xplot, pp, sp, yplot,
-                 ncol = 2, nrow = 2,  align = "hv",
-                 widths = c(6, 1), heights = c(1, 6),
+  # p <- ggarrange(xplot, pp, sp, yplot,
+  #                ncol = 2, nrow = 2,  align = "hv",
+  #                widths = c(6, 1), heights = c(1, 6),
+  #                common.legend = F)
+  # 
+  p <- ggarrange(sp, yplot,  align = "h",
+                 widths = c(6, 1),
                  common.legend = F)
   
   
@@ -523,6 +529,6 @@ graph <- function(f, dt, L, pp, pathName){
   return(p)
 }
 
-# graph(f, dt, pp)
+# graph(f, dt, pp, L, out.dir)
 
 
