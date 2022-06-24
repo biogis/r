@@ -55,17 +55,13 @@ cl <- makeCluster(UseCores)
 registerDoParallel(cl)
 
 
-# # # # ## choose working directory with all wav files
-in.dir <- choose.dir(caption = "Select input wav folder")
-# in.dir <- dlgInput("Enter your path to your wav files directory", Sys.info()["in.dir"])$res
-# # # #
-
-setwd(in.dir)
-
-
-# # # # ## choose copying directory
-out.dir <- choose.dir(caption = "Select output wav folder")
-# out.dir <- dlgInput("Enter your path to your output wav files directory", Sys.info()["out.dir"])$res
+# # # # ## choose working directory with all wav files and the copying directory
+in.dir <- try(choose.dir(caption = "Select input wav folder"), silent=T)
+out.dir <- try(choose.dir(caption = "Select output wav folder"), silent=T)
+if(class(in.dir)=='try-error'){
+  in.dir <- dlgInput("Enter your path to your wav files directory", Sys.info()["in.dir"])$res
+  out.dir <- dlgInput("Enter your path to your output wav files directory", Sys.info()["out.dir"])$res
+  }
 
 
 fn.f <- file.path(in.dir)
