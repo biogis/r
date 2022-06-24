@@ -1,9 +1,9 @@
 #########################################################
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
-# created on 2018.03.01
+# created on 2019.04.16
 # modified on 2022.06.24
-#source('./Rhi_Finder.r')
+# source('./Rhi_Finder.r')
 # https://github.com/biogis/r/blob/master/Rhi_Finder.r
 # source('https://raw.githubusercontent.com/biogis/r/master/Rhi_Finder.r')
 
