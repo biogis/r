@@ -62,6 +62,7 @@ BrBG <- colorRampPalette(c('#543005','#8c510a','#bf812d','#dfc27d','#f6e8c3','#f
 elevRamp <- colorRampPalette(c('#aff0e9','#ffffb3','#008040','#fcba03','#780000','#69300d','#ababab','#fffcff'))
 ScoRusRamp <- colorRampPalette(c('#2346c7','#ffffb3','#008040','#fcba03','#780000','#69300d', '#fe7c97', '#680459'))
 cb <- colorRampPalette(c('#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000'))
+magma <- colorRampPalette(c('#000004','#180f3d','#3f0f70','#681b7f','#8f2a7f','#b83877','#dd4e68','#f57160','#fda070','#fecf92','#fcfdbf'))
 
 
 #Define how many cores you want to use
