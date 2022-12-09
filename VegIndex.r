@@ -244,14 +244,14 @@ for(i in 1:length(fns)){
   cat('\tGNDVI\n')
   gndvi <- (nir-gr)/(nir+gr)
   names(gndvi) <- 'gndvi'
-  gndvi <- gndvi/sd(values(gndvi), na.rm=T)
+  # gndvi <- gndvi/sd(values(gndvi), na.rm=T)
 
 
   # GNDWI, with the NIR and green layer, water version of the NDVI
   cat('\tNDWI\n')
   ndwi <- (gr-nir)/(gr+nir)
   names(ndwi) <- 'ndwi'
-  ndwi <- ndwi/sd(values(ndwi), na.rm=T)
+  # ndwi <- ndwi/sd(values(ndwi), na.rm=T)
 
   # # Modified Soil Adjusted Vegetation Index (MSAVI2)
   # # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-rd)))
@@ -297,7 +297,7 @@ for(i in 1:length(fns)){
   wi <- exp(sc(ndwi))*(log(sc(bl))/log(sc(gr)))
   wi[wi==Inf | wi==-Inf] <- NA
   names(wi) <- 'wi'
-  wi <- wi/sd(values(wi), na.rm=T)
+  # wi <- wi/sd(values(wi), na.rm=T)
   plot(wi, col=elevRamp(255), legend=T) # Check layer
 
 
@@ -305,7 +305,7 @@ for(i in 1:length(fns)){
   nr <- exp(ndwi)*log(wi+2)*(re/nir)
   nr[nr==Inf | nr==-Inf] <- NA
   names(nr) <- 'nr'
-  nr <- nr/sd(values(nr), na.rm=T)
+  # nr <- nr/sd(values(nr), na.rm=T)
   plot(nr, col=elevRamp(255))
   plotRGB(c(ndwi,wi,nr), stretch="lin")
 
