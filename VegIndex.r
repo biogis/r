@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2022.02.17
-# modified on 2022.06.29
+# modified on 2022.12.09
 # https://github.com/biogis/r/blob/master/vegIndex.r
 # url <- 'https://raw.githubusercontent.com/biogis/r/master/VegIndex.r'
 # source('./vegIndex.r')
