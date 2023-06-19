@@ -2,7 +2,7 @@
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
 # created on 2022.02.17
-# modified on 2022.12.09
+# modified on 2023.06.19
 # https://github.com/biogis/r/blob/master/vegIndex.r
 # url <- 'https://raw.githubusercontent.com/biogis/r/master/VegIndex.r'
 # source('./vegIndex.r')
@@ -143,9 +143,16 @@ for(i in 1:length(fns)){
     fnr <- file.path(out.dir,f.prj)} else {
     fnr <- file.path(in.dir,d, f)}
 
-
-  r <- rast(fnr)
-
+  # check if reprojected orthoimage exists, open the raster and project orthoimage to swiss coordinate system (or any other, check epsg <- XXXXX), or simply open the raster
+  if(!is.na(epsg) & !file.exists(file.path(out.dir,f.prj))){
+    r <- rast(fnr)
+    p <- paste0('epsg:', epsg)
+    cat('re-project to the swiss coordinate system\t',p,'\n')
+    r <- terra::project(r, p, method='bilinear', filename=file.path(out.dir,f.prj), overwrite=T)
+  } else {
+    r <- rast(fnr)
+  }
+  
   # Check orthoimage
   plotRGB(r, stretch="lin")
 
@@ -155,13 +162,6 @@ for(i in 1:length(fns)){
   NAValues <- max(values(r), na.rm=T)
   if(NAValues == 2^16-1){
     r[r==max(values(r))] <- NA}
-
-  # Project orthoimage to swiss coordinate system (or any other, check epsg <- XXXXX)
-  if(!is.na(epsg) & !file.exists(file.path(out.dir,f.prj))){
-    p <- paste0('epsg:', epsg)
-    cat('re-project to the swiss coordinate system\t',p,'\n')
-    r <- project(r, p, method='bilinear', filename=file.path(out.dir,f.prj), overwrite=T)
-  }
 
   # check image again, it should be a correct rgb image
   plotRGB(r, stretch="lin")
@@ -254,6 +254,7 @@ for(i in 1:length(fns)){
   # ndwi <- ndwi/sd(values(ndwi), na.rm=T)
 
   # # Modified Soil Adjusted Vegetation Index (MSAVI2)
+  # cat('\tMSAVI2\n')
   # # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-rd)))
   # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-gr)))
   # msavi2[msavi2==Inf | msavi2==-Inf] <- NA
@@ -261,11 +262,22 @@ for(i in 1:length(fns)){
   # # plot(msavi2, col=elevRamp(255))
   # names(msavi2) <- 'msavi2'
 
+  
+  # Optimized Soil Adjusted Vegetation Index (OSAVI)
+  cat('\tOSAVI\n')
+  osavi <- (nir-rd)/(nir+rd+0.16)
+  osavi[osavi==Inf | osavi==-Inf] <- NA
+  osavi <- osavi/sd(values(osavi), na.rm=T)
+  plot(osavi, col=elevRamp(255))
+  names(osavi) <- 'osavi'
+  
   # # Burn Area Index
+  # cat('\tBurn Area Index\n')
   # bai <- 1/((0.1 - rd)^2 + (0.06 - nir)^2)
   # plot(bai, col=elevRamp(255))
 
   # # Global Environmental Monitoring Index (GEMI)
+  # cat('\tGlobal Environmental Monitoring Index (GEMI)\n')
   # eta <- ((2 * (nir^2 - rd^2)) + (1.5 * nir) + (0.5 * rd))/(nir + rd + 0.5)
   # # gemi  <- eta * (1 - (0.25 * eta)) - ((rd - 0.125)/(1 - rd))
   # gemi  <- eta * (1 - (0.25 * eta)) - ((gr - 0.125)/(1 - gr))
@@ -276,11 +288,13 @@ for(i in 1:length(fns)){
 
 
   # # Visible Atmospherically Resistant Index (VARI)
+  # cat('\tVisible Atmospherically Resistant Index (VARI)\n')
   # vari = (gr - rd) / (gr + rd - bl)
   # vari[vari==Inf | vari==-Inf] <- NA
   # plot(vari, col=elevRamp(255))
 
   # # Red-Edge Simple Ratio (SRre)
+  # cat('\tRed-Edge Simple Ratio (SRre)\n')
   # srre <- nir / gr
   # srre[srre==Inf | srre==-Inf] <- NA
   # plot(srre, col=elevRamp(255))
@@ -292,14 +306,17 @@ for(i in 1:length(fns)){
   # allvi <- allvi/sd(values(allvi), na.rm=T)
 
 
-  # Combine NDWI, green and blue layer to show water surface -> new Water Index -- WI & NR
-  cat('\texp(ndwi) * [log(bl)/log(gr)]\n')
-  wi <- exp(sc(ndwi))*(log(sc(bl))/log(sc(gr)))
+  # Combine NDWI, green and blue layer to show water surface -> new Water Index -- WI
+  cat('\texp(ndwi) * [exp(osavi)/log(gr)]\n')
+  # log.idx <- (log(sc(bl))/log(sc(gr)))
+  log.idx <- (exp(sc(osavi))/log(sc(gr)))
+  wi <- exp(sc(ndwi))*log.idx
   wi[wi==Inf | wi==-Inf] <- NA
   names(wi) <- 'wi'
-  # wi <- wi/sd(values(wi), na.rm=T)
+  wi <- wi/sd(values(wi), na.rm=T)
+  # wi[wi==max(values(wi), na.rm=T)] <- NA
   plot(wi, col=elevRamp(255), legend=T) # Check layer
-
+  
 
   cat('\texp(ndwi) * log(wi+2) * (re/nir)]\n')
   nr <- exp(ndwi)*log(wi+2)*(re/nir)
@@ -369,11 +386,19 @@ for(i in 1:length(fns)){
   rm(dt, xy, ndwi.255, wi.255, nr.255, bl.255, nir.255, ndwi.idx, wi.idx, nr.idx, bl.idx, nir.idx)
 
 
-  cat('stack all layers and give them a new name\n')
-  # Stack all the layers, and give them a new name
+  #######  #######  #######  #######  #######
+  # Save the raster layers in a raster stack, choose the complete or the light version (default is the light)
+  #######  #######  #######  #######  #######
+  
+  # cat('stack all layers and give them a new name\n')
+  # # Stack all the layers, and give them a new name
+  # s <- c(ndwi, wi, nr, rd, gr, bl, re, nir, gndvi, osavi, water_nir)
+  # names(s) <- c('ndwi','wi','nr','rd','gr','bl','re','nir','gndvi', 'osavi','water_nir')
 
-  s <- c(ndwi, wi, nr, rd, gr, bl, re, nir, gndvi, water_nir)
-  names(s) <- c('ndwi','wi','nr','rd','gr','bl','re','nir','gndvi','water_nir')
+ cat('stack all layers and give them a new name -- light version\n')
+  # Stack all the layers, and give them a new name
+  s <- c(ndwi, wi, nr, gndvi, osavi, water_nir)
+  names(s) <- c('ndwi','wi','nr', 'gndvi', 'osavi','water_nir')
 
 
   cat('Save a tif file with Vegetation index layers\n')
