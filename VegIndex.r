@@ -245,16 +245,19 @@ for(i in 1:length(fns)){
   gndvi <- (nir-gr)/(nir+gr)
   names(gndvi) <- 'gndvi'
   # gndvi <- gndvi/sd(values(gndvi), na.rm=T)
+  # gndvi[gndvi<0] <- NA
 
 
   # GNDWI, with the NIR and green layer, water version of the NDVI
   cat('\tNDWI\n')
   ndwi <- (gr-nir)/(gr+nir)
+  # ndwi <- (bl-nir)/(bl+nir)
   names(ndwi) <- 'ndwi'
   # ndwi <- ndwi/sd(values(ndwi), na.rm=T)
+  # ndwi[ndwi<0] <- NA
 
   # # Modified Soil Adjusted Vegetation Index (MSAVI2)
-  # cat('\tMSAVI2\n')
+  # cat('Modified Soil Adjusted Vegetation Index (MSAVI2)\n')
   # # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-rd)))
   # msavi2 <- (1/2) * (2*(nir+1)-sqrt((2*(nir+1))^2-8*(nir-gr)))
   # msavi2[msavi2==Inf | msavi2==-Inf] <- NA
@@ -262,22 +265,22 @@ for(i in 1:length(fns)){
   # # plot(msavi2, col=elevRamp(255))
   # names(msavi2) <- 'msavi2'
 
-  
+
   # Optimized Soil Adjusted Vegetation Index (OSAVI)
-  cat('\tOSAVI\n')
+  # cat('Optimized Soil Adjusted Vegetation Index (OSAVI)\n')
   osavi <- (nir-rd)/(nir+rd+0.16)
   osavi[osavi==Inf | osavi==-Inf] <- NA
   osavi <- osavi/sd(values(osavi), na.rm=T)
   plot(osavi, col=elevRamp(255))
   names(osavi) <- 'osavi'
-  
+
   # # Burn Area Index
-  # cat('\tBurn Area Index\n')
+  # cat('Burn Area Index\n')
   # bai <- 1/((0.1 - rd)^2 + (0.06 - nir)^2)
   # plot(bai, col=elevRamp(255))
 
   # # Global Environmental Monitoring Index (GEMI)
-  # cat('\tGlobal Environmental Monitoring Index (GEMI)\n')
+  # cat('Global Environmental Monitoring Index (GEMI)\n')
   # eta <- ((2 * (nir^2 - rd^2)) + (1.5 * nir) + (0.5 * rd))/(nir + rd + 0.5)
   # # gemi  <- eta * (1 - (0.25 * eta)) - ((rd - 0.125)/(1 - rd))
   # gemi  <- eta * (1 - (0.25 * eta)) - ((gr - 0.125)/(1 - gr))
@@ -288,26 +291,31 @@ for(i in 1:length(fns)){
 
 
   # # Visible Atmospherically Resistant Index (VARI)
-  # cat('\tVisible Atmospherically Resistant Index (VARI)\n')
+  # cat('Visible Atmospherically Resistant Index (VARI)\n')
   # vari = (gr - rd) / (gr + rd - bl)
   # vari[vari==Inf | vari==-Inf] <- NA
   # plot(vari, col=elevRamp(255))
 
   # # Red-Edge Simple Ratio (SRre)
-  # cat('\tRed-Edge Simple Ratio (SRre)\n')
+  # cat('Red-Edge Simple Ratio (SRre)\n')
   # srre <- nir / gr
   # srre[srre==Inf | srre==-Inf] <- NA
   # plot(srre, col=elevRamp(255))
 
   # # combine all layers to expend the -1 -> 0 values to -3 -> 0 value. It allow to refine the scale and facilitate the detection of ponds
   # cat('Combination of all VI\n')
-  # allvi <- -(exp(ndvi)+exp(msavi2)+exp(gndvi))
+  # allvi <- -(exp(ndvi)+exp(osavi)+exp(gndvi))
   # names(allvi) <- 'allvi'
   # allvi <- allvi/sd(values(allvi), na.rm=T)
 
+  # nbg <- c(ndwi, osavi, gndvi)
+  # plotRGB(nbg, stretch="lin")
+  # plot(allvi, col=BrBG(255), legend=F)
+  # plot(ndwi, col=elevRamp(255), legend=T)
+
 
   # Combine NDWI, green and blue layer to show water surface -> new Water Index -- WI
-  cat('\texp(ndwi) * [exp(osavi)/log(gr)]\n')
+  cat('\texp(ndwi) * [log(sc(osavi))/log(gr)]\n')
   # log.idx <- (log(sc(bl))/log(sc(gr)))
   log.idx <- (exp(sc(osavi))/log(sc(gr)))
   wi <- exp(sc(ndwi))*log.idx
@@ -316,15 +324,23 @@ for(i in 1:length(fns)){
   wi <- wi/sd(values(wi), na.rm=T)
   # wi[wi==max(values(wi), na.rm=T)] <- NA
   plot(wi, col=elevRamp(255), legend=T) # Check layer
-  
 
-  cat('\texp(ndwi) * log(wi+2) * (re/nir)]\n')
-  nr <- exp(ndwi)*log(wi+2)*(re/nir)
+
+  # nr <- ndwi^log(wi)
+  cat('\texp(ndwi) * log(sc(wi)+2) * (re/nir)]\n')
+  nr <- exp(ndwi)*log(sc(wi)+2)*(re/nir)
   nr[nr==Inf | nr==-Inf] <- NA
   names(nr) <- 'nr'
-  # nr <- nr/sd(values(nr), na.rm=T)
+  nr <- nr/sd(values(nr), na.rm=T)
   plot(nr, col=elevRamp(255))
   plotRGB(c(ndwi,wi,nr), stretch="lin")
+  plotRGB(c(ndwi,wi,osavi), stretch="lin")
+
+
+  # plotRGB(c(ndwi,wi,gndvi), stretch="lin")
+  # plotRGB(c(ndwi,wi,bl), stretch="lin")
+  # plotRGB(c(ndwi,nr,gndvi), stretch="lin")
+  # plotRGB(c(ndwi,wi,nr), stretch="lin")
 
 
   cat('index ndwi layer 0 -> 255\n')
@@ -340,8 +356,8 @@ for(i in 1:length(fns)){
   nr.255 <- (nr.idx*255)/max(values(nr.idx), na.rm=T);nr.255
 
   cat('index bl layer 0 -> 255\n')
-  bl.idx <- bl+abs(min(values(bl), na.rm=T)); bl.idx
-  bl.255 <- (bl.idx*255)/max(values(bl.idx), na.rm=T);bl.255
+  osavi.idx <- osavi+abs(min(values(osavi), na.rm=T)); osavi.idx
+  osavi.255 <- (osavi.idx*255)/max(values(osavi.idx), na.rm=T);osavi.255
 
   cat('index nir layer 0 -> 255\n')
   nir.idx <- nir+abs(min(values(nir), na.rm=T)); nir.idx
@@ -351,11 +367,13 @@ for(i in 1:length(fns)){
   dt <- data.frame('ndwi.255'=as.data.frame(values(ndwi.255)),
                    'wi.255'=as.data.frame(values(wi.255)),
                    'nr.255'=as.data.frame(values(nr.255)),
-                   'bl.255'=as.data.frame(values(bl.255)),
+                   'osavi.255'=as.data.frame(values(osavi.255)),
                    'nir.255'=as.data.frame(values(nir.255)))
-  names(dt) <- c('ndwi', 'wi', 'nr', 'bl', 'nir')
+  names(dt) <- c('ndwi', 'wi', 'nr', 'osavi', 'nir')
   summary(dt)
   head(dt); dim(dt)
+  # plot(dt, cex=0.3, pch=16)
+
 
   cat('compute hex color code of the layers ndwi==r, wi==g, nr==b\n')
   y <- which(!is.na(dt$ndwi) & is.na(dt$nr)); length(y)
@@ -397,8 +415,8 @@ for(i in 1:length(fns)){
 
  cat('stack all layers and give them a new name -- light version\n')
   # Stack all the layers, and give them a new name
-  s <- c(ndwi, wi, nr, gndvi, osavi, water_nir)
-  names(s) <- c('ndwi','wi','nr', 'gndvi', 'osavi','water_nir')
+  s <- c(ndwi, wi, nr, osavi, gndvi, water_nir)
+  names(s) <- c('ndwi','wi', 'nr', 'osavi','gndvi','water_nir')
 
 
   cat('Save a tif file with Vegetation index layers\n')
