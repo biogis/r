@@ -1,6 +1,8 @@
 #########################################################
 #########################################################
 # © eRey.ch | bioGIS; erey@biogis.ch
+# The script is free and available. Please cite correctly in your reports:
+# @ Emmanuel Rey | info fauna 2022-2023
 # created on 2022.02.17
 # modified on 2023.06.19
 # https://github.com/biogis/r/blob/master/vegIndex.r
